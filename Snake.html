@@ -2,7 +2,7 @@
 <html lang="zh-TW">
 <head>
   <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no"/>
   <title>Snake</title>
   <style>
     * { margin:0; padding:0; box-sizing:border-box; }
@@ -57,8 +57,16 @@
       font-size: 13px;
     }
     @media (max-width: 600px) {
+      body {
+        justify-content: flex-start;
+        padding-top: 8px;
+        min-height: 100vh;
+        min-height: 100dvh;
+        overflow: hidden;
+        touch-action: none;
+      }
       #mobile-controls { display: flex; }
-      #hint { font-size: 9px; }
+      #hint { display: none; }
     }
   </style>
 </head>
