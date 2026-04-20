@@ -182,7 +182,36 @@ canvas#board{ display:block; }
 }
 #mobile-next-box .mh-l{ font-size:7px; }
 #mobile-next-cv{ background:#000018; border:1px solid #333; display:block; }
-</style>
+#tet-mobile{ display:none; }
+
+@media(max-width:700px){
+  body{
+    flex-direction:column;
+    align-items:stretch;
+    justify-content:flex-start;
+    padding-top:4px;
+    height:100vh;
+    height:100dvh;
+    overflow:hidden;
+  }
+  #app{
+    flex-direction:column;
+    align-items:center;
+    border:none;
+    box-shadow:none;
+    width:100%;
+    overflow:hidden;
+  }
+  #left-panel,#right-panel{display:none;}
+  #center{width:100%;}
+  #topbar{display:none;}
+  #mobile-hud{display:flex;}
+  #mobile-game-area{display:flex;flex-direction:row;align-items:flex-start;width:100%;}
+  #board-wrap{border-left:none;border-right:none;border-bottom:none;flex:0 0 auto;}
+  #mobile-next-box{display:flex;flex:0 0 56px;}
+  .key-sub{display:none;}
+  #tet-mobile{display:flex;}
+}</style>
 </head>
 <body>
 <div id="app">
@@ -922,7 +951,6 @@ setTimeout(resizeGame,0);
   const css=document.createElement('style');
   css.textContent=`
     #tet-mobile{
-      display:none;
       flex-direction:column;
       align-items:center;
       gap:6px;
@@ -945,33 +973,6 @@ setTimeout(resizeGame,0);
     .tBtn:active{background:#223;}
     #tBtn-drop{width:136px;font-size:13px;color:#ff0;border-color:#ff0;}
     #tBtn-pause{width:84px;font-size:11px;color:#0cf;border-color:#0cf;}
-    @media(max-width:700px){
-      body{
-        flex-direction:column;
-        align-items:stretch;
-        justify-content:flex-start;
-        padding-top:4px;
-        height:100vh;
-        height:100dvh;
-        overflow:hidden;
-      }
-      #app{
-        flex-direction:column;
-        align-items:center;
-        border:none;
-        box-shadow:none;
-        width:100%;
-      }
-      #left-panel,#right-panel{display:none;}
-      #center{width:100%;}
-      #topbar{display:none;}
-      #mobile-hud{display:flex;}
-      #mobile-game-area{display:flex;flex-direction:row;align-items:flex-start;width:100%;}
-      #board-wrap{border-left:none;border-right:none;border-bottom:none;flex:0 0 auto;}
-      #mobile-next-box{display:flex;flex:0 0 56px;}
-      .key-sub{display:none;}
-      #tet-mobile{display:flex;}
-    }
   `;
   document.head.appendChild(css);
 
