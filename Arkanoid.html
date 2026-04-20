@@ -81,8 +81,8 @@
     box-shadow: 0 0 10px #0cf6;
   }
   .mBtn:active { background: #0cf3; }
-  #btn-fire  { font-size: 16px; padding: 14px 20px; border-color: #ff0; color: #ff0; box-shadow: 0 0 10px #ff06; }
-  #btn-menu  { font-size: 13px; padding: 10px 16px; border-color: #f44; color: #f44; box-shadow: 0 0 8px #f446; }
+  #btn-fire  { font-size: 11px; padding: 14px 16px; border-color: #ff0; color: #ff0; box-shadow: 0 0 10px #ff06; }
+  #btn-menu  { font-size: 10px; padding: 10px 12px; border-color: #f44; color: #f44; box-shadow: 0 0 8px #f446; }
 
   @media (max-width: 700px) {
     body { align-items: flex-start; padding-top: 4px; overflow: hidden; touch-action: none; }
@@ -90,8 +90,8 @@
     #sidebar { order: 0; display: flex; flex-wrap: wrap; gap: 0 18px; width: 100%; justify-content: center; font-size: 13px !important; }
     #canvas-container { order: 1; }
     #mobile-controls { order: 2; }
-    #sidebar br { display: none; }
     #mobile-controls { display: flex; }
+    .key-hint, #sidebar br { display: none; }
   }
 </style>
 </head>
@@ -108,9 +108,9 @@
     <div class="label">LIVES</div>
     <div class="value" id="s-lives">3</div>
     <br>
-    <div class="label">← → 移動</div>
-    <div class="label">SPACE 發射/暫停</div>
-    <div class="label">ESC 主畫面</div>
+    <div class="label key-hint">← → 移動</div>
+    <div class="label key-hint">SPACE 發射/暫停</div>
+    <div class="label key-hint">ESC 主畫面</div>
     <br>
     <div id="s-power" style="color:#0f0;font-size:11px;"></div>
   </div>
@@ -1209,15 +1209,18 @@ function drawTitle() {
   ctx.shadowBlur = 0;
 
   // Instructions
+  const isMobileTitle = window.innerWidth <= 700;
   ctx.font = '7px "Press Start 2P",monospace';
   ctx.fillStyle = Math.floor(titleTimer / 500) % 2 === 0 ? '#ff0' : '#880';
   ctx.textAlign = 'center';
-  ctx.fillText('PRESS SPACE TO START', W/2, 200);
+  ctx.fillText(isMobileTitle ? 'TAP FIRE TO START' : 'PRESS SPACE TO START', W/2, 200);
 
-  ctx.fillStyle = '#888';
-  ctx.font = '6px "Press Start 2P",monospace';
-  ctx.fillText('← →  MOVE   SPC  LAUNCH', W/2, 216);
-  ctx.fillText('ESC  MAIN MENU', W/2, 228);
+  if (!isMobileTitle) {
+    ctx.fillStyle = '#888';
+    ctx.font = '6px "Press Start 2P",monospace';
+    ctx.fillText('← →  MOVE   SPC  LAUNCH', W/2, 216);
+    ctx.fillText('ESC  MAIN MENU', W/2, 228);
+  }
 
   // Copyright
   ctx.fillStyle = '#333';
@@ -1250,10 +1253,10 @@ function drawGameOver() {
 
   ctx.fillStyle = Math.floor(titleTimer / 500) % 2 === 0 ? '#ff0' : '#880';
   ctx.font = '7px "Press Start 2P",monospace';
-  ctx.fillText('PRESS SPACE TO RETRY', W/2, 175);
+  ctx.fillText(window.innerWidth <= 700 ? 'TAP FIRE TO RETRY' : 'PRESS SPACE TO RETRY', W/2, 175);
   ctx.fillStyle = '#666';
   ctx.font = '6px "Press Start 2P",monospace';
-  ctx.fillText('ESC for TITLE', W/2, 190);
+  ctx.fillText(window.innerWidth <= 700 ? 'TAP MENU TO QUIT' : 'ESC for TITLE', W/2, 190);
 }
 
 function drawGlowText(text, x, y, font, color, shadow) {
