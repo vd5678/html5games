@@ -1169,12 +1169,14 @@ function drawTitle() {
   drawGlowText('ARKANOID', W/2, 68, 'bold 22px monospace', '#0ff', '#036');
   drawGlowText('快打磚塊', W/2, 88, 'bold 14px monospace', '#ff0', '#840');
 
-  // Preview bricks
+  // Preview bricks — centered: 11 cols × (BRICK_W-1)=15 + last brick width 14 = 164px total
+  const brickTotalW = 10 * (BRICK_W - 1) + (BRICK_W - 2); // 164
+  const brickStartX = Math.round((W - brickTotalW) / 2); // 30
   const previewColors = ['#f33','#f80','#ff0','#0d0','#0ee','#44f','#d0d'];
   for (let r = 0; r < 4; r++) {
     for (let c = 0; c < 11; c++) {
       const col = previewColors[(r + c) % previewColors.length];
-      const bx = 16 + c * (BRICK_W - 1);
+      const bx = brickStartX + c * (BRICK_W - 1);
       const by = 100 + r * (BRICK_H - 1);
       const g = ctx.createLinearGradient(bx, by, bx, by + BRICK_H - 2);
       g.addColorStop(0, lighten(col, 0.3));
@@ -1184,12 +1186,16 @@ function drawTitle() {
     }
   }
 
-  // Animated demo paddle + ball
-  const demoX = 60 + Math.sin(titleTimer * 0.002) * 50;
+  // Animated demo paddle — moves left/right independently
+  const demoX = Math.round(W/2 - 14 + Math.sin(titleTimer * 0.0018) * 48);
   ctx.fillStyle = '#acf';
-  ctx.beginPath(); ctx.roundRect(demoX, 148, 28, 5, 2); ctx.fill();
-  const ballX = demoX + 14 + Math.sin(titleTimer * 0.003) * 30;
-  const ballY = 138 + Math.abs(Math.sin(titleTimer * 0.004)) * 30;
+  ctx.beginPath(); ctx.roundRect(demoX, 178, 28, 5, 2); ctx.fill();
+
+  // Ball bounces vertically between bricks (y≈130) and paddle (y≈178)
+  // Use a triangle wave so it goes up and comes back down realistically
+  const ballPhase = (titleTimer * 0.0025) % (Math.PI * 2);
+  const ballX = Math.round(W/2 + Math.sin(titleTimer * 0.0017) * 40);
+  const ballY = Math.round(130 + Math.abs(Math.sin(ballPhase)) * 44); // 130..174
   ctx.shadowColor = '#fff'; ctx.shadowBlur = 6;
   ctx.fillStyle = '#fff';
   ctx.beginPath(); ctx.arc(ballX, ballY, 3, 0, Math.PI*2); ctx.fill();
@@ -1199,12 +1205,12 @@ function drawTitle() {
   ctx.font = '8px monospace';
   ctx.fillStyle = Math.floor(titleTimer / 500) % 2 === 0 ? '#ff0' : '#880';
   ctx.textAlign = 'center';
-  ctx.fillText('── PRESS SPACE TO START ──', W/2, 175);
+  ctx.fillText('── PRESS SPACE TO START ──', W/2, 200);
 
   ctx.fillStyle = '#888';
   ctx.font = '7px monospace';
-  ctx.fillText('← → MOVE   SPACE LAUNCH/PAUSE', W/2, 192);
-  ctx.fillText('ESC MAIN MENU', W/2, 203);
+  ctx.fillText('← → MOVE   SPACE LAUNCH/PAUSE', W/2, 216);
+  ctx.fillText('ESC MAIN MENU', W/2, 227);
 
   // Copyright
   ctx.fillStyle = '#444';
