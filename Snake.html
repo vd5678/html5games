@@ -299,7 +299,7 @@ function drawDead(){
   ctx.fillText('BEST  : ' + best,  W/2, 163);
   ctx.fillStyle=C.tail;
   ctx.font='11px "Courier New",monospace';
-  ctx.fillText('ENTER / SPACE  -  retry', W/2, 210);
+  ctx.fillText(window.innerWidth<=600 ? 'TAP START  -  retry' : 'ENTER / SPACE  -  retry', W/2, 210);
   ctx.textAlign='start';
 }
 
