@@ -281,12 +281,12 @@
 
   // HUD bar
   ctx.fillStyle=BG; ctx.fillRect(OX,6,COLS*CELL,26);
-  ctx.fillStyle=HD; ctx.font='bold 9px "Courier New",monospace'; ctx.textAlign='left';
+  ctx.fillStyle=HD; ctx.font='7px "Press Start 2P",monospace'; ctx.textAlign='left';
   ctx.fillText('LV 3', OX+6, 23);
   ctx.textAlign='center';
-  ctx.fillText('SCORE: 340', OX+COLS*CELL/2, 23);
+  ctx.fillText('SCORE:340', OX+COLS*CELL/2, 23);
   ctx.textAlign='right';
-  ctx.fillText('BEST: 580', OX+COLS*CELL-6, 23);
+  ctx.fillText('BEST:580', OX+COLS*CELL-6, 23);
 
   // Board
   ctx.fillStyle=BG; ctx.fillRect(OX, OY, COLS*CELL, ROWS*CELL);
@@ -329,7 +329,7 @@
 
   // Score popup particle effect hint
   ctx.fillStyle='#0F380F88';
-  ctx.font='bold 8px "Courier New",monospace'; ctx.textAlign='left';
+  ctx.font='7px "Press Start 2P",monospace'; ctx.textAlign='left';
   ctx.fillText('+10', OX+3*CELL, OY+7*CELL-2);
 })();
 

@@ -3,6 +3,10 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preload" as="font" href="https://fonts.gstatic.com/s/pressstart2p/v16/e3t4euO8T-267oIAQAu6jDQyK0nR.woff2" type="font/woff2" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
   <title>Snake</title>
   <style>
     * { margin:0; padding:0; box-sizing:border-box; }
@@ -11,14 +15,16 @@
       display: flex; flex-direction: column;
       align-items: center; justify-content: center;
       min-height: 100vh;
-      font-family: 'Courier New', monospace;
+      font-family: 'Press Start 2P', 'Courier New', monospace;
     }
     #hud {
       display: flex; justify-content: space-between; align-items: center;
       width: 280px; background: #9BBC0F;
-      padding: 5px 10px; font-size: 12px; color: #0F380F;
+      padding: 5px 10px; font-size: 8px; color: #0F380F;
       border: 2px solid #6a8c00; border-bottom: none;
       border-radius: 4px 4px 0 0;
+      white-space: nowrap;
+      height: 30px;
     }
     #game-wrapper {
       position: relative; border: 2px solid #6a8c00; line-height: 0;
@@ -26,8 +32,8 @@
     canvas { display: block; image-rendering: pixelated; }
     #hint {
       width: 280px; background: #111; color: #666;
-      font-size: 11px; text-align: center;
-      padding: 7px 6px; line-height: 2;
+      font-size: 7px; text-align: center;
+      padding: 8px 6px; line-height: 2.8;
       border-radius: 0 0 4px 4px;
     }
     /* Mobile controls */
@@ -71,6 +77,7 @@
   </style>
 </head>
 <body>
+<div style="position:absolute;visibility:hidden;font-family:'Press Start 2P';font-size:4px">.</div>
 
 <div id="hud">
   <span>LV <span id="level-hud">1</span></span>
@@ -80,7 +87,7 @@
 <div id="game-wrapper">
   <canvas id="canvas" width="280" height="280"></canvas>
 </div>
-<div id="hint">ARROW KEYS &mdash; move<br>ENTER / SPACE &mdash; start &amp; pause<br>P &mdash; pause</div>
+<div id="hint">UP DN LT RT &mdash; MOVE<br>ENTER / SPC &mdash; START / PAUSE<br>P &mdash; PAUSE</div>
 <div id="mobile-controls">
   <div class="mob-row"><button class="mBtn" id="mbtn-up">▲</button></div>
   <div class="mob-row">
@@ -251,8 +258,8 @@ function draw(){
   if(paused){
     ctx.fillStyle='rgba(155,188,15,0.75)'; ctx.fillRect(0,0,W,H);
     ctx.fillStyle=C.head; ctx.textAlign='center';
-    ctx.font='bold 16px "Courier New",monospace'; ctx.fillText('- PAUSED -',W/2,H/2-10);
-    ctx.font='11px "Courier New",monospace'; ctx.fillStyle=C.tail;
+    ctx.font='14px "Press Start 2P",monospace'; ctx.fillText('- PAUSED -',W/2,H/2-10);
+    ctx.font='7px "Press Start 2P",monospace'; ctx.fillStyle=C.tail;
     ctx.fillText(window.innerWidth<=600 ? 'TAP START/PAUSE to resume' : 'ENTER / SPACE to resume',W/2,H/2+14);
     ctx.textAlign='start';
   }
@@ -270,20 +277,21 @@ function drawStart(){
   drawBg();
   ctx.textAlign='center';
   ctx.fillStyle=C.head;
-  ctx.font='bold 32px "Courier New",monospace';
-  ctx.fillText('SNAKE', W/2, 80);
+  ctx.font='20px "Press Start 2P",monospace';
+  ctx.fillText('SNAKE', W/2, 72);
   const isMobile = window.innerWidth <= 600;
   if(!isMobile){
-    ctx.font='12px "Courier New",monospace';
+    ctx.font='8px "Press Start 2P",monospace';
     ctx.fillStyle=C.tail;
-    ctx.fillText('ARROW KEYS  -  move', W/2, 130);
-    ctx.fillText('ENTER / SPACE  -  start', W/2, 155);
-    ctx.fillText('P  -  pause', W/2, 180);
+    ctx.fillText('UP DN LT RT  MOVE', W/2, 130);
+    ctx.fillText('ENTER / SPC', W/2, 154);
+    ctx.fillText('START / PAUSE', W/2, 172);
+    ctx.fillText('P  —  PAUSE', W/2, 196);
   }
   if(Math.floor(Date.now()/600)%2===0){
     ctx.fillStyle=C.head;
-    ctx.font='bold 13px "Courier New",monospace';
-    ctx.fillText(isMobile ? '[ TAP START ]' : '[ PRESS ENTER ]', W/2, 230);
+    ctx.font='8px "Press Start 2P",monospace';
+    ctx.fillText(isMobile ? '[ TAP START ]' : '[ PRESS ENTER ]', W/2, 240);
   }
   ctx.textAlign='start';
 }
@@ -292,14 +300,14 @@ function drawDead(){
   drawBg();
   ctx.textAlign='center';
   ctx.fillStyle=C.head;
-  ctx.font='bold 24px "Courier New",monospace';
-  ctx.fillText('GAME OVER', W/2, 85);
-  ctx.font='14px "Courier New",monospace';
-  ctx.fillText('SCORE : ' + score, W/2, 135);
-  ctx.fillText('BEST  : ' + best,  W/2, 163);
+  ctx.font='16px "Press Start 2P",monospace';
+  ctx.fillText('GAME OVER', W/2, 80);
+  ctx.font='8px "Press Start 2P",monospace';
+  ctx.fillText('SCORE : ' + score, W/2, 128);
+  ctx.fillText('BEST  : ' + best,  W/2, 152);
   ctx.fillStyle=C.tail;
-  ctx.font='11px "Courier New",monospace';
-  ctx.fillText(window.innerWidth<=600 ? 'TAP START  -  retry' : 'ENTER / SPACE  -  retry', W/2, 210);
+  ctx.font='6px "Press Start 2P",monospace';
+  ctx.fillText(window.innerWidth<=600 ? 'TAP START  -  retry' : 'ENTER / SPACE  -  retry', W/2, 206);
   ctx.textAlign='start';
 }
 
