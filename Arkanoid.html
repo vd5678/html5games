@@ -467,7 +467,7 @@ function update(ts) {
 
     // Wall collision
     if (ball.x - BALL_R < 8)  { ball.x = 8 + BALL_R; ball.vx = Math.abs(ball.vx); sndWall(); }
-    if (ball.x + BALL_R > W-8){ ball.x = W-8-BALL_R; ball.vx = -Math.abs(ball.vx); sndWall(); }
+    if (!breakPortal && ball.x + BALL_R > W-8){ ball.x = W-8-BALL_R; ball.vx = -Math.abs(ball.vx); sndWall(); }
     if (ball.y - BALL_R < 16) { ball.y = 16 + BALL_R; ball.vy = Math.abs(ball.vy); sndWall(); }
 
     // Portal
@@ -522,6 +522,13 @@ function update(ts) {
           }
         } else {
           sndWall();
+          // Anti-trap: add tiny random nudge so ball can't loop forever on gold bricks
+          ball.vx += (Math.random() - 0.5) * 0.3;
+          ball.vy += (Math.random() - 0.5) * 0.3;
+          const _len = Math.hypot(ball.vx, ball.vy);
+          const _spd = ball.speed || 2.5;
+          ball.vx = ball.vx / _len * _spd;
+          ball.vy = ball.vy / _len * _spd;
         }
         break;
       }
@@ -698,6 +705,7 @@ function nextLevel() {
   if (level > LEVELS.length) level = LEVELS.length;
   updateHUD();
   initLevel();
+  updatePowerLabel();
   STATE = 'PLAYING';
 }
 
