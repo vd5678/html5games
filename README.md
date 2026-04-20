@@ -2,15 +2,16 @@
 
 個人製作的 HTML5 Canvas 網頁遊戲，無需安裝，直接用瀏覽器開啟即可遊玩。
 
-🎮 **線上遊玩：** https://vd5678.github.io/html5games/
+🎮 **線上遊玩：** https://vd5678.github.io/html5gamezone/
 
 ## 遊戲列表
 
 | 遊戲 | 線上連結 | 操作說明 |
 |------|----------|----------|
-| 快打磚塊 Arkanoid | [Play](https://vd5678.github.io/html5games/Arkanoid.html) | ← → 移動，SPACE 發射／暫停，ESC 主畫面 |
-| 貪食蛇 Snake      | [Play](https://vd5678.github.io/html5games/Snake.html)    | ← → ↑ ↓ 控制方向 |
-| 俄羅斯方塊 Tetris | [Play](https://vd5678.github.io/html5games/Tetris.html)   | ← → 移動，↑ 旋轉，↓ 加速，SPACE 直落 |
+| 快打磚塊 Arkanoid | [Play](https://vd5678.github.io/html5gamezone/Arkanoid.html) | ← → 移動，SPACE 發射／暫停，ESC 主畫面 |
+| 貪食蛇 Snake      | [Play](https://vd5678.github.io/html5gamezone/Snake.html)    | ← → ↑ ↓ 控制方向，ENTER／SPACE 開始暫停 |
+| 俄羅斯方塊 Tetris | [Play](https://vd5678.github.io/html5gamezone/Tetris.html)   | ← → 移動，↑ 旋轉，↓ 加速，SPACE 直落 |
+| 病菌剋星 Dr. Pill | [Play](https://vd5678.github.io/html5gamezone/DrPill.html)   | ← → 移動，↑ 旋轉，↓ 加速，SPACE 直落，20 關 |
 
 ## 功能特色
 
@@ -28,4 +29,5 @@ Copyright (c) 2026 Victor H.S. Liu
 ## 注意事項
 
 - 快打磚塊（Arkanoid）遊戲設計參考自 TAITO 1986 年原版，本作為非商業個人重製，版權歸原著作人所有。
+- 病菌剋星（Dr. Pill）遊戲設計參考自任天堂 Dr. Mario，本作為非商業個人重製，版權歸原著作人所有。
 - 本程式碼為原創實作，未使用任何第三方遊戲引擎。
