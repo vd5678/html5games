@@ -834,7 +834,9 @@ setTimeout(resizeGame,0);
     #tBtn-pause{width:84px;font-size:11px;color:#0cf;border-color:#0cf;}
     @media(max-width:700px){
       body{
-        align-items:flex-start;
+        flex-direction:column;
+        align-items:stretch;
+        justify-content:flex-start;
         padding-top:4px;
         height:100vh;
         height:100dvh;
@@ -874,7 +876,7 @@ setTimeout(resizeGame,0);
       <button class="tBtn" id="tBtn-pause">PAUSE</button>
     </div>
   `;
-  document.body.appendChild(div);
+  document.getElementById('app').appendChild(div);
 
   function fire(keyName,type='keydown'){
     const e=new KeyboardEvent(type,{key:keyName,bubbles:true,cancelable:true});
