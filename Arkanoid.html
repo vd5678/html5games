@@ -1186,16 +1186,17 @@ function drawTitle() {
     }
   }
 
-  // Animated demo paddle — moves left/right independently
-  const demoX = Math.round(W/2 - 14 + Math.sin(titleTimer * 0.0018) * 48);
+  // Ball bounces between brick bottom (y=132) and paddle (y=178)
+  // ballY reaches exactly 175 so ball bottom (y+r=175+3=178) touches paddle top
+  const ballPhase = (titleTimer * 0.0025) % (Math.PI * 2);
+  const ballX = Math.round(W/2 + Math.sin(titleTimer * 0.0017) * 44);
+  const ballY = Math.round(132 + Math.abs(Math.sin(ballPhase)) * 43); // 132..175
+
+  // Paddle always tracks ball X so it's always underneath when ball arrives
+  const demoX = Math.max(8, Math.min(W - 8 - 28, ballX - 14));
   ctx.fillStyle = '#acf';
   ctx.beginPath(); ctx.roundRect(demoX, 178, 28, 5, 2); ctx.fill();
 
-  // Ball bounces vertically between bricks (y≈130) and paddle (y≈178)
-  // Use a triangle wave so it goes up and comes back down realistically
-  const ballPhase = (titleTimer * 0.0025) % (Math.PI * 2);
-  const ballX = Math.round(W/2 + Math.sin(titleTimer * 0.0017) * 40);
-  const ballY = Math.round(130 + Math.abs(Math.sin(ballPhase)) * 44); // 130..174
   ctx.shadowColor = '#fff'; ctx.shadowBlur = 6;
   ctx.fillStyle = '#fff';
   ctx.beginPath(); ctx.arc(ballX, ballY, 3, 0, Math.PI*2); ctx.fill();
