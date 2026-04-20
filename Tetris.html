@@ -263,6 +263,7 @@ const nCv=document.getElementById('next-cv'), nCtx=nCv.getContext('2d');
 let board,piece,nxt,score,level,lines,stats;
 let dropT=0,dropSpd=800,lastTs=0,animId=0;
 let running=false,paused=false,muted=false;
+let clearing=false,clearingRows=[];
 
 /* ================================================================
    Web Audio — NES Type-A (Korobeiniki) 完整旋律 + 和聲
@@ -485,7 +486,7 @@ function lock(){
   }));
   if(dead){endGame();return;}
   sfx('land');
-  doLines();
+  if(doLines()) return; // flash in progress – finishClear() will resume
   stats[piece.d.id]=(stats[piece.d.id]||0)+1;
   renderStats();
   piece=nxt; nxt=mkPiece();
@@ -493,15 +494,59 @@ function lock(){
 }
 
 function doLines(){
-  let n=0;
+  // Collect full rows without removing yet
+  const full=[];
   for(let r=ROWS-1;r>=0;r--){
-    if(board[r].every(v=>v)){board.splice(r,1);board.unshift(new Array(COLS).fill(0));n++;r++;}
+    if(board[r].every(v=>v)) full.push(r);
   }
-  if(!n)return;
-  n===4?sfx('tetris'):sfx('clear');
+  if(!full.length) return false;
+
+  clearingRows=full;
+  clearing=true;
+  cancelAnimationFrame(animId);
+  full.length===4?sfx('tetris'):sfx('clear');
+
+  // 4 blinks × 55ms = ~440ms flash
+  const FLASHES=4, INTERVAL=55;
+  let tick=0;
+  function flashTick(){
+    tick++;
+    renderWithFlash(tick%2===1); // odd=white, even=original
+    if(tick<FLASHES*2) setTimeout(flashTick,INTERVAL);
+    else finishClear();
+  }
+  setTimeout(flashTick,INTERVAL);
+  return true;
+}
+
+function renderWithFlash(white){
+  bCtx.fillStyle='#000012'; bCtx.fillRect(0,0,bCv.width,bCv.height);
+  bCtx.strokeStyle='#0d0d28'; bCtx.lineWidth=1;
+  for(let r=0;r<ROWS;r++) for(let c=0;c<COLS;c++) bCtx.strokeRect(c*SZ,r*SZ,SZ,SZ);
+  board.forEach((row,r)=>row.forEach((v,c)=>{
+    if(!v) return;
+    if(white && clearingRows.includes(r)){
+      bCtx.fillStyle='#fff'; bCtx.fillRect(c*SZ+1,r*SZ+1,SZ-2,SZ-2);
+    } else { drawBlock(bCtx,c*SZ,r*SZ,v,SZ); }
+  }));
+}
+
+function finishClear(){
+  const n=clearingRows.length;
+  clearingRows.sort((a,b)=>b-a).forEach(r=>{
+    board.splice(r,1); board.unshift(new Array(COLS).fill(0));
+  });
+  clearingRows=[]; clearing=false;
   lines+=n; score+=PTS[n]*(level+1);
   level=Math.floor(lines/10); dropSpd=spd(level);
   updateHUD();
+  // Spawn next piece
+  stats[piece.d.id]=(stats[piece.d.id]||0)+1;
+  renderStats();
+  piece=nxt; nxt=mkPiece();
+  if(hit(board,piece.x,piece.y,piece.shape)){endGame();return;}
+  lastTs=performance.now();
+  animId=requestAnimationFrame(loop);
 }
 
 /* ── 繪製 ── */
@@ -633,7 +678,7 @@ function handleSD(dt){
 }
 
 function loop(ts){
-  if(!running||paused)return;
+  if(!running||paused||clearing)return;
   const dt=ts-lastTs; lastTs=ts;
   handleDAS(dt);
   handleSD(dt);
