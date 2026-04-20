@@ -1,0 +1,799 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8"/>
+<title>TETRIS</title>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet"/>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+
+body{
+  background:#000;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  min-height:100vh;
+  font-family:'Press Start 2P',monospace;
+  image-rendering:pixelated;
+}
+
+#app{
+  display:flex;
+  gap:0;
+  align-items:stretch;
+  background:#000;
+  border:4px solid #fff;
+  box-shadow:0 0 0 4px #000, 0 0 0 8px #808080;
+}
+
+/* ── 左側統計 ── */
+#left-panel{
+  width:148px;
+  background:#000;
+  padding:14px 10px;
+  border-right:4px solid #444;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+
+/* ── 中央 ── */
+#center{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+}
+#topbar{
+  width:100%;
+  background:#000;
+  border-left:6px solid #888;
+  border-right:6px solid #888;
+  border-top:6px solid #888;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  height:32px;
+}
+#topbar span{
+  color:#fff;
+  font-size:13px;
+  letter-spacing:6px;
+}
+#board-wrap{
+  position:relative;
+  border-left:6px solid #888;
+  border-right:6px solid #888;
+  border-bottom:6px solid #888;
+}
+canvas#board{ display:block; }
+
+/* ── 右側面板 ── */
+#right-panel{
+  width:148px;
+  background:#000;
+  padding:14px 10px;
+  border-left:4px solid #444;
+  display:flex;
+  flex-direction:column;
+  gap:14px;
+}
+
+.lbl{
+  color:#f0a000;
+  font-size:8px;
+  letter-spacing:1px;
+  margin-bottom:5px;
+}
+.val{
+  color:#fff;
+  font-size:14px;
+  text-align:right;
+  letter-spacing:1px;
+}
+
+/* 統計 */
+.srow{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  margin-bottom:4px;
+}
+.srow .scnt{
+  color:#fff;
+  font-size:9px;
+  margin-left:auto;
+  letter-spacing:1px;
+}
+
+/* Next */
+#next-box canvas{
+  display:block;
+  margin:6px auto 0;
+  background:#000018;
+  border:2px solid #333;
+}
+
+/* 鍵說明 */
+#keyhelp{
+  margin-top:auto;
+  color:#555;
+  font-size:7px;
+  line-height:2.1;
+}
+#keyhelp span{ color:#999; }
+
+/* ── 覆蓋層 ── */
+#overlay{
+  position:absolute;
+  inset:0;
+  background:rgba(0,0,0,0.9);
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  align-items:center;
+  gap:14px;
+  z-index:20;
+}
+#overlay h1{
+  font-size:22px;
+  color:#ff0;
+  text-shadow:0 0 12px #f80,0 0 30px #f00;
+  letter-spacing:6px;
+}
+.sub{ font-size:7px; color:#888; line-height:2.4; text-align:center; }
+.gbtn{
+  margin-top:4px;
+  padding:10px 22px;
+  font-family:inherit;
+  font-size:10px;
+  background:#000;
+  color:#0ff;
+  border:2px solid #0ff;
+  cursor:pointer;
+  letter-spacing:2px;
+}
+.gbtn:hover{ background:#003333; }
+.hi{ color:#ff0; }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- 左：統計 -->
+  <div id="left-panel">
+    <div class="lbl">STATISTICS</div>
+    <div id="stats-list"></div>
+  </div>
+
+  <!-- 中：遊戲 -->
+  <div id="center">
+    <div id="topbar"><span>TETRIS</span></div>
+    <div id="board-wrap">
+      <canvas id="board" width="200" height="400"></canvas>
+      <div id="overlay">
+        <h1>TETRIS</h1>
+        <div class="sub">
+          ← → &nbsp; 移 動<br>
+          ↑ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 旋 轉<br>
+          ↓ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 加 速<br>
+          SPACE &nbsp; 直 落<br>
+          P &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 暫 停<br>
+          M &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 靜 音
+        </div>
+        <button class="gbtn" id="start-btn">▶ GAME START</button>
+        <div class="sub" style="font-size:6px;color:#555;margin-top:-6px">或按任意鍵開始</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 右：分數 -->
+  <div id="right-panel">
+    <div><div class="lbl">SCORE</div><div class="val" id="v-score">000000</div></div>
+    <div><div class="lbl">LINES</div><div class="val" id="v-lines">000</div></div>
+    <div><div class="lbl">LEVEL</div><div class="val" id="v-level">00</div></div>
+    <div id="next-box">
+      <div class="lbl">NEXT</div>
+      <canvas id="next-cv" width="80" height="56"></canvas>
+    </div>
+    <div id="keyhelp">
+      <span>← →</span> MOVE<br>
+      <span>↑</span> ROTATE<br>
+      <span>↓</span> SOFT DROP<br>
+      <span>SPC</span> HARD DROP<br>
+      <span>P</span> PAUSE &nbsp;<span>M</span> MUTE
+    </div>
+  </div>
+</div>
+
+<script>
+/* ================================================================
+   NES / Game Boy 風格俄羅斯方塊  —  完整版
+   ================================================================ */
+
+const COLS=10, ROWS=20, SZ=20;
+
+// NES Tetris 各等級下落間隔 (ms)
+const SPD=[800,717,633,550,467,383,300,217,133,100,
+           83,83,83,67,67,67,50,50,50,33,
+           33,33,33,33,33,33,33,33,33,17];
+const spd=lv=>SPD[Math.min(lv,SPD.length-1)];
+
+// NES 計分
+const PTS=[0,40,100,300,1200];
+
+/* ── 方塊定義（NES 原版配色） ──────────────────────── */
+const DEFS=[
+  {id:1,color:'#00a8f0',hi:'#70e4ff',dk:'#005888',  // I 青
+   S:[[[0,0,0,0],[1,1,1,1],[0,0,0,0],[0,0,0,0]],
+      [[0,1,0,0],[0,1,0,0],[0,1,0,0],[0,1,0,0]]]},
+  {id:2,color:'#0040e0',hi:'#6090ff',dk:'#001880',  // J 藍
+   S:[[[2,0,0],[2,2,2],[0,0,0]],
+      [[2,2],[2,0],[2,0]],
+      [[2,2,2],[0,0,2],[0,0,0]],
+      [[0,2],[0,2],[2,2]]]},
+  {id:3,color:'#e06000',hi:'#ffb040',dk:'#803000',  // L 橘
+   S:[[[0,0,3],[3,3,3],[0,0,0]],
+      [[3,0],[3,0],[3,3]],
+      [[3,3,3],[3,0,0],[0,0,0]],
+      [[3,3],[0,3],[0,3]]]},
+  {id:4,color:'#d8c000',hi:'#ffee60',dk:'#706000',  // O 黃
+   S:[[[4,4],[4,4]]]},
+  {id:5,color:'#00a000',hi:'#60e060',dk:'#005000',  // S 綠
+   S:[[[0,5,5],[5,5,0],[0,0,0]],
+      [[5,0],[5,5],[0,5]]]},
+  {id:6,color:'#900090',hi:'#d060d0',dk:'#500050',  // T 紫
+   S:[[[0,6,0],[6,6,6],[0,0,0]],
+      [[6,0],[6,6],[6,0]],
+      [[6,6,6],[0,6,0],[0,0,0]],
+      [[0,6],[6,6],[0,6]]]},
+  {id:7,color:'#d00000',hi:'#ff6060',dk:'#700000',  // Z 紅
+   S:[[[7,7,0],[0,7,7],[0,0,0]],
+      [[0,7],[7,7],[7,0]]]},
+];
+const DEF=id=>DEFS[id-1];
+const RND_DEF=()=>DEFS[Math.floor(Math.random()*7)];
+
+/* ── Canvas ────────────────────────────────────────── */
+const bCv=document.getElementById('board'), bCtx=bCv.getContext('2d');
+const nCv=document.getElementById('next-cv'), nCtx=nCv.getContext('2d');
+
+/* ── 遊戲狀態 ──────────────────────────────────────── */
+let board,piece,nxt,score,level,lines,stats;
+let dropT=0,dropSpd=800,lastTs=0,animId=0;
+let running=false,paused=false,muted=false;
+
+/* ================================================================
+   Web Audio — NES Type-A (Korobeiniki) 完整旋律 + 和聲
+   ================================================================ */
+const AC=new(window.AudioContext||window.webkitAudioContext)();
+
+/* 音名→Hz 輔助 */
+function hz(name){
+  const map={C:0,'C#':1,Db:1,D:2,'D#':3,Eb:3,E:4,F:5,'F#':6,Gb:6,G:7,'G#':8,Ab:8,A:9,'A#':10,Bb:10,B:11};
+  const m=name.match(/^([A-G][b#]?)(\d)$/);
+  if(!m)return 0;
+  const semi=map[m[1]], oct=parseInt(m[2]);
+  return 440*Math.pow(2,(semi-9+(oct-4)*12)/12);
+}
+
+/* BPM=160, 用四分音符單位 */
+const BPM=160, Q=60000/BPM, E=Q/2, H=Q*2, S=Q/4;
+
+/* ── Type-A 主旋律（精確版）── */
+const MEL=[
+  [hz('E5'),Q],[hz('B4'),E],[hz('C5'),E],[hz('D5'),Q],[hz('C5'),E],[hz('B4'),E],
+  [hz('A4'),Q],[hz('A4'),E],[hz('C5'),E],[hz('E5'),Q],[hz('D5'),E],[hz('C5'),E],
+  [hz('B4'),Q+E],[hz('C5'),E],[hz('D5'),Q],[hz('E5'),Q],
+  [hz('C5'),Q],[hz('A4'),Q],[hz('A4'),H],
+  [0,E],
+  [hz('D5'),Q],[hz('F5'),E],[hz('A5'),Q],[hz('G5'),E],[hz('F5'),E],
+  [hz('E5'),Q+E],[hz('C5'),E],[hz('E5'),Q],[hz('D5'),E],[hz('C5'),E],
+  [hz('B4'),Q],[hz('B4'),E],[hz('C5'),E],[hz('D5'),Q],[hz('E5'),Q],
+  [hz('C5'),Q],[hz('A4'),Q],[hz('A4'),H],
+  [0,Q],
+  // 重複
+  [hz('E5'),Q],[hz('B4'),E],[hz('C5'),E],[hz('D5'),Q],[hz('C5'),E],[hz('B4'),E],
+  [hz('A4'),Q],[hz('A4'),E],[hz('C5'),E],[hz('E5'),Q],[hz('D5'),E],[hz('C5'),E],
+  [hz('B4'),Q+E],[hz('C5'),E],[hz('D5'),Q],[hz('E5'),Q],
+  [hz('C5'),Q],[hz('A4'),Q],[hz('A4'),H],
+  [0,E],
+  [hz('D5'),Q],[hz('F5'),E],[hz('A5'),Q],[hz('G5'),E],[hz('F5'),E],
+  [hz('E5'),Q+E],[hz('C5'),E],[hz('E5'),Q],[hz('D5'),E],[hz('C5'),E],
+  [hz('B4'),Q],[hz('B4'),E],[hz('C5'),E],[hz('D5'),Q],[hz('E5'),Q],
+  [hz('C5'),Q],[hz('A4'),Q],[hz('A4'),H],
+  [0,Q],
+  // Bridge
+  [hz('E5'),Q],[hz('C5'),Q],[hz('D5'),Q],[hz('B4'),Q],
+  [hz('C5'),Q],[hz('A4'),Q],[hz('Ab4'),H],
+  [hz('E5'),Q],[hz('C5'),Q],[hz('D5'),Q],[hz('B4'),Q],
+  [hz('C5'),E],[hz('E5'),E],[hz('A5'),Q],[0,Q],
+  [hz('G5'),E],[hz('F5'),E],[hz('E5'),Q],[hz('C5'),Q],
+  [hz('D5'),Q],[hz('B4'),Q],[hz('C5'),H],
+];
+
+/* ── Type-A 低音（原版低音線）── */
+const BAS=[
+  [hz('A2'),Q],[0,E],[hz('E3'),E],[hz('A2'),Q],[hz('E3'),E],[0,E],
+  [hz('A2'),Q],[0,E],[hz('E3'),E],[hz('A2'),Q],[hz('E3'),E],[0,E],
+  [hz('G2'),Q],[0,E],[hz('D3'),E],[hz('G2'),Q],[hz('D3'),E],[0,E],
+  [hz('A2'),Q],[0,E],[hz('E3'),E],[hz('A2'),Q],[hz('E3'),E],[0,E],
+  [hz('A2'),Q],[0,E],[hz('E3'),E],[hz('A2'),Q],[hz('E3'),E],[0,E],
+  [hz('F2'),Q],[0,E],[hz('C3'),E],[hz('F2'),Q],[hz('C3'),E],[0,E],
+  [hz('E2'),Q],[0,E],[hz('B2'),E],[hz('E2'),Q],[hz('B2'),E],[0,E],
+  [hz('A2'),Q],[0,E],[hz('E3'),E],[hz('A2'),H],
+];
+
+/* ── 和聲（旋律上方大/小三度，維持 A minor 調式）── */
+const HARM=[
+  [hz('G5'),Q],[hz('D5'),E],[hz('E5'),E],[hz('F5'),Q],[hz('E5'),E],[hz('D5'),E],
+  [hz('C5'),Q],[hz('C5'),E],[hz('E5'),E],[hz('G5'),Q],[hz('F5'),E],[hz('E5'),E],
+  [hz('D5'),Q+E],[hz('E5'),E],[hz('F5'),Q],[hz('G5'),Q],
+  [hz('E5'),Q],[hz('C5'),Q],[hz('C5'),H],
+  [0,E],
+  [hz('F5'),Q],[hz('A5'),E],[hz('C6'),Q],[hz('B5'),E],[hz('A5'),E],
+  [hz('G5'),Q+E],[hz('E5'),E],[hz('G5'),Q],[hz('F5'),E],[hz('E5'),E],
+  [hz('D5'),Q],[hz('D5'),E],[hz('E5'),E],[hz('F5'),Q],[hz('G5'),Q],
+  [hz('E5'),Q],[hz('C5'),Q],[hz('C5'),H],
+  [0,Q],
+  // repeat
+  [hz('G5'),Q],[hz('D5'),E],[hz('E5'),E],[hz('F5'),Q],[hz('E5'),E],[hz('D5'),E],
+  [hz('C5'),Q],[hz('C5'),E],[hz('E5'),E],[hz('G5'),Q],[hz('F5'),E],[hz('E5'),E],
+  [hz('D5'),Q+E],[hz('E5'),E],[hz('F5'),Q],[hz('G5'),Q],
+  [hz('E5'),Q],[hz('C5'),Q],[hz('C5'),H],
+  [0,E],
+  [hz('F5'),Q],[hz('A5'),E],[hz('C6'),Q],[hz('B5'),E],[hz('A5'),E],
+  [hz('G5'),Q+E],[hz('E5'),E],[hz('G5'),Q],[hz('F5'),E],[hz('E5'),E],
+  [hz('D5'),Q],[hz('D5'),E],[hz('E5'),E],[hz('F5'),Q],[hz('G5'),Q],
+  [hz('E5'),Q],[hz('C5'),Q],[hz('C5'),H],
+  [0,Q],
+  // bridge
+  [hz('G5'),Q],[hz('E5'),Q],[hz('F5'),Q],[hz('D5'),Q],
+  [hz('E5'),Q],[hz('C5'),Q],[hz('C5'),H],
+  [hz('G5'),Q],[hz('E5'),Q],[hz('F5'),Q],[hz('D5'),Q],
+  [hz('E5'),E],[hz('G5'),E],[hz('C6'),Q],[0,Q],
+  [hz('B5'),E],[hz('A5'),E],[hz('G5'),Q],[hz('E5'),Q],
+  [hz('F5'),Q],[hz('D5'),Q],[hz('E5'),H],
+];
+
+let mIdx=0,bIdx=0,hIdx=0,mTmr=null,bTmr=null,hTmr=null;
+
+function playNote(f,dur,vol,type){
+  if(!f||muted)return;
+  const o=AC.createOscillator(),g=AC.createGain();
+  o.type=type||'square';
+  o.frequency.value=f;
+  const t=AC.currentTime,d=dur/1000;
+  g.gain.setValueAtTime(vol,t);
+  g.gain.setValueAtTime(vol*0.8,t+d*0.75);
+  g.gain.exponentialRampToValueAtTime(0.0001,t+d);
+  o.connect(g);g.connect(AC.destination);
+  o.start(t);o.stop(t+d+0.02);
+}
+
+function tickMel(){
+  if(!running||paused||muted){mTmr=null;return;}
+  const [f,d]=MEL[mIdx%MEL.length]; mIdx++;
+  playNote(f,d*0.88,0.10,'square');
+  mTmr=setTimeout(tickMel,d);
+}
+function tickHarm(){
+  if(!running||paused||muted){hTmr=null;return;}
+  const [f,d]=HARM[hIdx%HARM.length]; hIdx++;
+  playNote(f,d*0.82,0.055,'pulse'||'square');  // 用 square 模擬 pulse
+  hTmr=setTimeout(tickHarm,d);
+}
+function tickBas(){
+  if(!running||paused||muted){bTmr=null;return;}
+  const [f,d]=BAS[bIdx%BAS.length]; bIdx++;
+  playNote(f,d*0.75,0.07,'triangle');
+  bTmr=setTimeout(tickBas,d);
+}
+function startMusic(){ stopMusic(); mIdx=0;bIdx=0;hIdx=0; tickMel();tickHarm();tickBas(); }
+function stopMusic(){
+  if(mTmr){clearTimeout(mTmr);mTmr=null;}
+  if(bTmr){clearTimeout(bTmr);bTmr=null;}
+  if(hTmr){clearTimeout(hTmr);hTmr=null;}
+}
+
+/* ── 音效 ── */
+function sfx(type){
+  if(muted)return;
+  const t=AC.currentTime;
+  const sq=(f,dur,vol)=>{
+    const o=AC.createOscillator(),g=AC.createGain();
+    o.type='square';o.frequency.value=f;
+    g.gain.setValueAtTime(vol,t);
+    g.gain.exponentialRampToValueAtTime(0.0001,t+dur);
+    o.connect(g);g.connect(AC.destination);o.start(t);o.stop(t+dur+0.01);
+  };
+  if(type==='move'){  sq(220,0.04,0.05); }
+  else if(type==='rotate'){ sq(440,0.05,0.08); }
+  else if(type==='land'){
+    const o=AC.createOscillator(),g=AC.createGain();
+    o.type='square';
+    o.frequency.setValueAtTime(180,t);
+    o.frequency.exponentialRampToValueAtTime(60,t+0.1);
+    g.gain.setValueAtTime(0.13,t);g.gain.exponentialRampToValueAtTime(0.0001,t+0.12);
+    o.connect(g);g.connect(AC.destination);o.start(t);o.stop(t+0.13);
+  }
+  else if(type==='clear'){
+    [0,0.06,0.12,0.18].forEach((d,i)=>setTimeout(()=>sq(440+i*110,0.12,0.12),d*1000));
+  }
+  else if(type==='tetris'){
+    // 4行閃光音
+    [0,0.07,0.14,0.21,0.30].forEach((d,i)=>{
+      const o=AC.createOscillator(),g=AC.createGain();
+      o.type='square';o.frequency.value=330+i*90;
+      const tt=t+d;
+      g.gain.setValueAtTime(0.15,tt);g.gain.exponentialRampToValueAtTime(0.0001,tt+0.18);
+      o.connect(g);g.connect(AC.destination);o.start(tt);o.stop(tt+0.2);
+    });
+  }
+  else if(type==='over'){
+    [392,349,330,294,262,220].forEach((f,i)=>{
+      const tt=t+i*0.18;
+      const o=AC.createOscillator(),g=AC.createGain();
+      o.type='square';o.frequency.value=f;
+      g.gain.setValueAtTime(0.18,tt);g.gain.exponentialRampToValueAtTime(0.0001,tt+0.22);
+      o.connect(g);g.connect(AC.destination);o.start(tt);o.stop(tt+0.24);
+    });
+  }
+}
+
+/* ── 方塊 ── */
+function mkPiece(){
+  const d=RND_DEF();
+  return{d,rot:0,shape:d.S[0].map(r=>[...r]),
+    x:Math.floor(COLS/2-d.S[0][0].length/2),y:0};
+}
+function getShp(d,rot){ return d.S[rot%d.S.length].map(r=>[...r]); }
+
+function hit(b,x,y,sh){
+  for(let r=0;r<sh.length;r++)
+    for(let c=0;c<sh[r].length;c++){
+      if(!sh[r][c])continue;
+      const nx=x+c,ny=y+r;
+      if(nx<0||nx>=COLS||ny>=ROWS)return true;
+      if(ny>=0&&b[ny][nx])return true;
+    }
+  return false;
+}
+
+function doRotate(p,b){
+  const nr=(p.rot+1)%p.d.S.length;
+  const ns=getShp(p.d,nr);
+  for(const[kx,ky]of[[0,0],[1,0],[-1,0],[2,0],[-2,0],[0,-1]]){
+    if(!hit(b,p.x+kx,p.y+ky,ns)){
+      p.rot=nr;p.shape=ns;p.x+=kx;p.y+=ky;
+      sfx('rotate');return;
+    }
+  }
+}
+
+/* ── 盤面 ── */
+const mkBoard=()=>Array.from({length:ROWS},()=>new Array(COLS).fill(0));
+
+function lock(){
+  let dead=false;
+  piece.shape.forEach((row,r)=>row.forEach((v,c)=>{
+    if(!v)return;
+    const ny=piece.y+r;
+    if(ny<0){dead=true;return;}
+    board[ny][piece.x+c]=piece.d.id;
+  }));
+  if(dead){endGame();return;}
+  sfx('land');
+  doLines();
+  stats[piece.d.id]=(stats[piece.d.id]||0)+1;
+  renderStats();
+  piece=nxt; nxt=mkPiece();
+  if(hit(board,piece.x,piece.y,piece.shape)){endGame();return;}
+}
+
+function doLines(){
+  let n=0;
+  for(let r=ROWS-1;r>=0;r--){
+    if(board[r].every(v=>v)){board.splice(r,1);board.unshift(new Array(COLS).fill(0));n++;r++;}
+  }
+  if(!n)return;
+  n===4?sfx('tetris'):sfx('clear');
+  lines+=n; score+=PTS[n]*(level+1);
+  level=Math.floor(lines/10); dropSpd=spd(level);
+  updateHUD();
+}
+
+/* ── 繪製 ── */
+/* NES 方塊：實色 + 內框高光/陰影 */
+function drawBlock(ctx,px,py,id,sz){
+  if(!id)return;
+  const d=DEF(id),s=sz,b=Math.max(2,Math.floor(sz/5));
+  ctx.fillStyle=d.color; ctx.fillRect(px,py,s,s);
+  // 高光
+  ctx.fillStyle=d.hi;
+  ctx.fillRect(px+b,py+b,s-b*2,b);   // 上
+  ctx.fillRect(px+b,py+b,b,s-b*2);   // 左
+  // 陰影
+  ctx.fillStyle=d.dk;
+  ctx.fillRect(px+b,py+s-b*2,s-b*2,b); // 下
+  ctx.fillRect(px+s-b*2,py+b,b,s-b*2); // 右
+  // 外框
+  ctx.strokeStyle='rgba(0,0,0,0.45)';ctx.lineWidth=1;
+  ctx.strokeRect(px+.5,py+.5,s-1,s-1);
+}
+
+function ghostY(){
+  let y=piece.y;
+  while(!hit(board,piece.x,y+1,piece.shape))y++;
+  return y;
+}
+
+function render(){
+  bCtx.fillStyle='#000012'; bCtx.fillRect(0,0,bCv.width,bCv.height);
+  // 格線
+  bCtx.strokeStyle='#0d0d28'; bCtx.lineWidth=1;
+  for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++)bCtx.strokeRect(c*SZ,r*SZ,SZ,SZ);
+  // 盤面
+  board.forEach((row,r)=>row.forEach((v,c)=>{if(v)drawBlock(bCtx,c*SZ,r*SZ,v,SZ);}));
+  if(!running)return;
+  // 幽靈
+  const gy=ghostY();
+  if(gy!==piece.y){
+    bCtx.globalAlpha=0.18;
+    piece.shape.forEach((row,r)=>row.forEach((v,c)=>{
+      if(v)drawBlock(bCtx,(piece.x+c)*SZ,(gy+r)*SZ,piece.d.id,SZ);
+    }));
+    bCtx.globalAlpha=1;
+  }
+  // 目前方塊
+  piece.shape.forEach((row,r)=>row.forEach((v,c)=>{
+    if(v)drawBlock(bCtx,(piece.x+c)*SZ,(piece.y+r)*SZ,piece.d.id,SZ);
+  }));
+  // Next
+  nCtx.fillStyle='#000018'; nCtx.fillRect(0,0,nCv.width,nCv.height);
+  const ns2=16,sh2=nxt.d.S[0];
+  const nx2=Math.floor((nCv.width/ns2-sh2[0].length)/2);
+  const ny2=Math.floor((nCv.height/ns2-sh2.length)/2);
+  sh2.forEach((row,r)=>row.forEach((v,c)=>{
+    if(v)drawBlock(nCtx,(nx2+c)*ns2,(ny2+r)*ns2,nxt.d.id,ns2);
+  }));
+}
+
+/* ── HUD ── */
+const pad=(n,l)=>String(n).padStart(l,'0');
+function updateHUD(){
+  document.getElementById('v-score').textContent=pad(score,6);
+  document.getElementById('v-lines').textContent=pad(lines,3);
+  document.getElementById('v-level').textContent=pad(level,2);
+}
+
+/* ── 統計面板 ── */
+function buildStats(){
+  const el=document.getElementById('stats-list');
+  el.innerHTML='';
+  DEFS.forEach(d=>{
+    const row=document.createElement('div');row.className='srow';
+    const cv=document.createElement('canvas');
+    cv.width=36;cv.height=20;
+    const cx=cv.getContext('2d');
+    const sc=8;
+    d.S[0].forEach((r,ri)=>r.forEach((v,ci)=>{if(v)drawBlock(cx,ci*sc,ri*sc,d.id,sc);}));
+    const span=document.createElement('span');
+    span.className='scnt';span.id='sc'+d.id;span.textContent='000';
+    row.appendChild(cv);row.appendChild(span);
+    el.appendChild(row);
+  });
+}
+function renderStats(){
+  DEFS.forEach(d=>{
+    const el=document.getElementById('sc'+d.id);
+    if(el)el.textContent=pad(stats[d.id]||0,3);
+  });
+}
+
+/* ── 主迴圈 ── */
+// DAS（Delayed Auto Shift）— NES 原版：初次延遲 167ms，連發 33ms
+const DAS_DELAY=167, DAS_REPEAT=33;
+let dasDir=0, dasTimer=0, dasCharge=0;
+const keys={};
+
+function handleDAS(dt){
+  if(!running||paused)return;
+  const wantL=keys['ArrowLeft'] &&!keys['ArrowRight'];
+  const wantR=keys['ArrowRight']&&!keys['ArrowLeft'];
+  const dir=wantL?-1:wantR?1:0;
+  if(dir===0){dasDir=0;dasCharge=0;dasTimer=0;return;}
+  if(dir!==dasDir){dasDir=dir;dasTimer=0;dasCharge=0;return;}
+  dasTimer+=dt;
+  if(dasTimer<DAS_DELAY)return;
+  dasCharge+=(dasTimer-DAS_DELAY);
+  dasTimer=DAS_DELAY;
+  while(dasCharge>=DAS_REPEAT){
+    dasCharge-=DAS_REPEAT;
+    if(!hit(board,piece.x+dir,piece.y,piece.shape)){piece.x+=dir;sfx('move');}
+    else break;
+  }
+}
+
+// 軟降連按處理
+const SD_REPEAT=50;
+let sdTimer=0, sdCharge=0;
+function handleSD(dt){
+  if(!running||paused||!keys['ArrowDown'])return;
+  sdTimer+=dt;
+  if(sdTimer<SD_REPEAT)return;
+  sdCharge+=(sdTimer-SD_REPEAT);
+  sdTimer=SD_REPEAT;
+  while(sdCharge>=SD_REPEAT){
+    sdCharge-=SD_REPEAT;
+    if(!hit(board,piece.x,piece.y+1,piece.shape)){piece.y++;score++;updateHUD();}
+    else{lock();break;}
+  }
+}
+
+function loop(ts){
+  if(!running||paused)return;
+  const dt=ts-lastTs; lastTs=ts;
+  handleDAS(dt);
+  handleSD(dt);
+  dropT+=dt;
+  if(dropT>=dropSpd){
+    dropT=0;
+    if(!hit(board,piece.x,piece.y+1,piece.shape))piece.y++;
+    else lock();
+  }
+  render(); animId=requestAnimationFrame(loop);
+}
+
+/* ── 遊戲控制 ── */
+function startGame(){
+  if(AC.state==='suspended')AC.resume();
+  board=mkBoard(); score=0;level=0;lines=0;stats={};
+  dropSpd=spd(0);dropT=0;
+  // 清空輸入狀態
+  Object.keys(keys).forEach(k=>keys[k]=false);
+  dasDir=0;dasTimer=0;dasCharge=0;sdTimer=0;sdCharge=0;
+  piece=mkPiece();nxt=mkPiece();
+  updateHUD();buildStats();renderStats();
+  document.getElementById('overlay').style.display='none';
+  running=true;paused=false;
+  lastTs=performance.now();
+  animId=requestAnimationFrame(loop);
+  startMusic();
+}
+
+function endGame(){
+  running=false; cancelAnimationFrame(animId);
+  stopMusic(); sfx('over'); render();
+  const ov=document.getElementById('overlay');
+  ov.innerHTML=`
+    <h1 style="color:#f33;font-size:16px;letter-spacing:4px">GAME OVER</h1>
+    <div class="sub">SCORE<br><span class="hi" style="font-size:16px">${pad(score,6)}</span></div>
+    <div class="sub">LEVEL ${pad(level,2)} &nbsp; LINES ${pad(lines,3)}</div>
+    <button class="gbtn" id="start-btn">▶ PLAY AGAIN</button>
+    <div class="sub" style="font-size:6px;color:#555;margin-top:-6px">或按任意鍵重新開始</div>
+  `;
+  ov.style.display='flex';
+  document.getElementById('start-btn').addEventListener('click',startGame);
+}
+
+function togglePause(){
+  if(!running)return;
+  paused=!paused;
+  if(paused){
+    stopMusic(); cancelAnimationFrame(animId);
+    const ov=document.getElementById('overlay');
+    ov.innerHTML=`
+      <h1 style="font-size:16px;color:#0ff;letter-spacing:6px">PAUSE</h1>
+      <div class="sub" style="margin-top:4px">P 或任意鍵 &nbsp; 繼續<br>ESC &nbsp; 回主選單</div>
+    `;
+    ov.style.display='flex';
+  }else{
+    document.getElementById('overlay').style.display='none';
+    lastTs=performance.now(); dropT=0;
+    dasDir=0; dasTimer=0; dasCharge=0; sdTimer=0; sdCharge=0;
+    animId=requestAnimationFrame(loop);
+    tickMel(); tickHarm(); tickBas();
+  }
+}
+
+/* ── 鍵盤 ── */
+document.addEventListener('keydown',e=>{
+  if([' ','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.key))e.preventDefault();
+  if(e.repeat)return; // 完全禁用瀏覽器 key-repeat，全部自行控制
+  const k=e.key;
+  keys[k]=true;
+
+  // 暫停中：任意鍵繼續
+  if(paused){
+    if(k!=='F5'&&k!=='F11'&&k!=='F12'&&k!=='Escape'&&!k.startsWith('Meta'))
+      togglePause();
+    return;
+  }
+
+  // 未運行中：任意鍵開始
+  if(!running){
+    const ov=document.getElementById('overlay');
+    if(ov.style.display!=='none'){
+      if(k!=='F5'&&k!=='F11'&&k!=='F12'&&k!=='Escape'&&!k.startsWith('Meta'))
+        startGame();
+    }
+    return;
+  }
+
+  // 遊戲進行中
+  if(k==='Escape'){
+    running=false; paused=false;
+    cancelAnimationFrame(animId); stopMusic();
+    const ov=document.getElementById('overlay');
+    ov.innerHTML=`
+      <h1>TETRIS</h1>
+      <div class="sub">
+        ← → &nbsp; 移 動<br>
+        ↑ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 旋 轉<br>
+        ↓ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 加 速<br>
+        SPACE &nbsp; 直 落<br>
+        P &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 暫 停<br>
+        M &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 靜 音
+      </div>
+      <button class="gbtn" id="start-btn">▶ GAME START</button>
+      <div class="sub" style="font-size:6px;color:#555;margin-top:-6px">或按任意鍵開始</div>
+    `;
+    ov.style.display='flex';
+    document.getElementById('start-btn').addEventListener('click',startGame);
+    return;
+  }
+  if(k==='p'||k==='P'){togglePause();return;}
+  if(k==='m'||k==='M'){
+    muted=!muted;
+    if(muted)stopMusic();else{tickMel();tickHarm();tickBas();}
+    return;
+  }
+
+  // 旋轉：keydown 單次觸發，與移動完全獨立
+  if(k==='ArrowUp'){doRotate(piece,board);return;}
+
+  // 硬降
+  if(k===' '){
+    let d=0;
+    while(!hit(board,piece.x,piece.y+1,piece.shape)){piece.y++;d++;}
+    score+=d*2;updateHUD();lock();dropT=0;
+    return;
+  }
+
+  // 左右：keydown 立即移動一格，後續由 DAS 驅動
+  if(k==='ArrowLeft'){
+    dasDir=-1;dasTimer=0;dasCharge=0;
+    if(!hit(board,piece.x-1,piece.y,piece.shape)){piece.x--;sfx('move');}
+    return;
+  }
+  if(k==='ArrowRight'){
+    dasDir=1;dasTimer=0;dasCharge=0;
+    if(!hit(board,piece.x+1,piece.y,piece.shape)){piece.x++;sfx('move');}
+    return;
+  }
+
+  // 軟降：keydown 立即落一格，後續由 handleSD 驅動
+  if(k==='ArrowDown'){
+    sdTimer=0;sdCharge=0;dropT=0;
+    if(!hit(board,piece.x,piece.y+1,piece.shape)){piece.y++;score++;updateHUD();}
+    else lock();
+    return;
+  }
+});
+
+document.addEventListener('keyup',e=>{
+  keys[e.key]=false;
+  if(e.key==='ArrowLeft'||e.key==='ArrowRight'){
+    dasDir=0;dasTimer=0;dasCharge=0;
+  }
+  if(e.key==='ArrowDown'){sdTimer=0;sdCharge=0;}
+});
+
+/* ── 初始化 ── */
+buildStats();
+document.getElementById('start-btn').addEventListener('click',startGame);
+bCtx.fillStyle='#000012'; bCtx.fillRect(0,0,bCv.width,bCv.height);
+nCtx.fillStyle='#000018'; nCtx.fillRect(0,0,nCv.width,nCv.height);
+</script>
+</body>
+</html>

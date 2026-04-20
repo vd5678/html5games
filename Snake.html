@@ -1,0 +1,293 @@
+﻿<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Snake</title>
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      background: #1a1a1a;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      min-height: 100vh;
+      font-family: 'Courier New', monospace;
+    }
+    #hud {
+      display: flex; justify-content: space-between; align-items: center;
+      width: 280px; background: #9BBC0F;
+      padding: 5px 10px; font-size: 12px; color: #0F380F;
+      border: 2px solid #6a8c00; border-bottom: none;
+      border-radius: 4px 4px 0 0;
+    }
+    #game-wrapper {
+      position: relative; border: 2px solid #6a8c00; line-height: 0;
+    }
+    canvas { display: block; image-rendering: pixelated; }
+    #hint {
+      width: 280px; background: #111; color: #666;
+      font-size: 11px; text-align: center;
+      padding: 7px 6px; line-height: 2;
+      border-radius: 0 0 4px 4px;
+    }
+  </style>
+</head>
+<body>
+
+<div id="hud">
+  <span>LV <span id="level-hud">1</span></span>
+  <span>SCORE: <span id="score-top">0</span></span>
+  <span>BEST: <span id="best-hud">0</span></span>
+</div>
+<div id="game-wrapper">
+  <canvas id="canvas" width="280" height="280"></canvas>
+</div>
+<div id="hint">ARROW KEYS &mdash; move<br>ENTER / SPACE &mdash; start &amp; pause<br>P &mdash; pause</div>
+
+<script>
+const canvas = document.getElementById('canvas');
+const ctx    = canvas.getContext('2d');
+const W = canvas.width, H = canvas.height;
+const COLS = 20, ROWS = 20, CELL = 14;
+
+const C = {
+  bg:   '#9BBC0F',
+  grid: '#8BAC0F',
+  head: '#0F380F',
+  tail: '#306230',
+  food: '#0F380F',
+};
+
+// Audio
+const AC = new (window.AudioContext || window.webkitAudioContext)();
+function unlockAudio(){ if(AC.state==='suspended') AC.resume(); }
+function tone(f0,f1,type,dur,vol){
+  unlockAudio();
+  const o=AC.createOscillator(), g=AC.createGain();
+  o.connect(g); g.connect(AC.destination);
+  o.type=type;
+  o.frequency.setValueAtTime(f0,AC.currentTime);
+  if(f1) o.frequency.exponentialRampToValueAtTime(f1,AC.currentTime+dur);
+  g.gain.setValueAtTime(vol,AC.currentTime);
+  g.gain.exponentialRampToValueAtTime(0.0001,AC.currentTime+dur);
+  o.start(); o.stop(AC.currentTime+dur);
+}
+const sfx={
+  eat:    ()=>tone(440,880,'sine',0.12,0.25),
+  bonus:  ()=>{ tone(660,990,'sine',0.1,0.25); setTimeout(()=>tone(880,1320,'sine',0.15,0.25),110); },
+  levelUp:()=>[523,659,784,1047].forEach((f,i)=>setTimeout(()=>tone(f,f*1.01,'triangle',0.18,0.22),i*85)),
+  die:    ()=>{ tone(300,60,'sawtooth',0.09,0.35); setTimeout(()=>tone(180,40,'sawtooth',0.15,0.25),90); setTimeout(()=>tone(90,30,'sawtooth',0.22,0.2),200); },
+};
+
+// State
+let snake, dir, inputDir, food, bonus;
+let score, best=+(localStorage.getItem('snakeBest')||0);
+let level, speed, alive, paused, stepTimer;
+let particles=[], rafId=0, prevTs=0;
+let gameState='start'; // 'start' | 'running' | 'dead'
+
+document.getElementById('best-hud').textContent = best;
+
+function rnd(n){ return Math.floor(Math.random()*n); }
+function onSnake(p){ return snake.some(s=>s.x===p.x&&s.y===p.y); }
+
+function init(){
+  snake=[{x:12,y:10},{x:11,y:10},{x:10,y:10}];
+  dir={x:1,y:0}; inputDir={x:1,y:0};
+  score=0; level=1; speed=150; stepTimer=0;
+  particles=[]; bonus=null; alive=true; paused=false;
+  document.getElementById('score-top').textContent=0;
+  document.getElementById('level-hud').textContent=1;
+  placeFood();
+}
+
+function placeFood(){
+  let p; do{ p={x:rnd(COLS),y:rnd(ROWS)}; }while(onSnake(p));
+  food=p;
+}
+function placeBonus(){
+  let p; do{ p={x:rnd(COLS),y:rnd(ROWS)}; }while(onSnake(p)||(p.x===food.x&&p.y===food.y));
+  bonus={x:p.x,y:p.y,timer:8000};
+}
+
+function step(){
+  if(!(inputDir.x===-dir.x && inputDir.y===-dir.y)) dir={...inputDir};
+  const hx=snake[0].x+dir.x, hy=snake[0].y+dir.y;
+  if(hx<0||hx>=COLS||hy<0||hy>=ROWS){ alive=false; sfx.die(); return; }
+  const ateFood  = hx===food.x && hy===food.y;
+  const ateBonus = !!(bonus && hx===bonus.x && hy===bonus.y);
+  if(!ateFood && !ateBonus) snake.pop();
+  if(snake.some(s=>s.x===hx&&s.y===hy)){ alive=false; sfx.die(); return; }
+  snake.unshift({x:hx,y:hy});
+  if(ateFood){
+    const pl=level; score+=10*level; updateScore(); burst(food.x*CELL+CELL/2,food.y*CELL+CELL/2,15);
+    placeFood(); updateLevel();
+    if(level>pl) sfx.levelUp(); else sfx.eat();
+    if(score%50===0 && !bonus) placeBonus();
+  } else if(ateBonus){
+    const pl=level; score+=50*level; updateScore(); burst(bonus.x*CELL+CELL/2,bonus.y*CELL+CELL/2,24);
+    bonus=null; updateLevel();
+    if(level>pl) sfx.levelUp(); else sfx.bonus();
+  }
+}
+
+function updateScore(){
+  score = score;
+  document.getElementById('score-top').textContent=score;
+  if(score>best){ best=score; localStorage.setItem('snakeBest',best); document.getElementById('best-hud').textContent=best; }
+}
+function updateLevel(){
+  const lv=Math.floor(score/100)+1;
+  if(lv!==level){ level=lv; speed=Math.max(60,150-(lv-1)*12); document.getElementById('level-hud').textContent=lv; }
+}
+
+function burst(cx,cy,n){
+  for(let i=0;i<n;i++){
+    const a=Math.random()*Math.PI*2, spd=1.5+Math.random()*3;
+    particles.push({x:cx,y:cy,vx:Math.cos(a)*spd,vy:Math.sin(a)*spd-1,size:2+Math.random()*3,life:1});
+  }
+}
+
+function loop(ts){
+  const dt=Math.min(ts-prevTs,100); prevTs=ts;
+  if(!paused){
+    stepTimer+=dt;
+    if(bonus){ bonus.timer-=dt; if(bonus.timer<=0) bonus=null; }
+    particles.forEach(p=>{ p.x+=p.vx; p.y+=p.vy; p.vy+=0.05; p.life-=dt*0.002; });
+    particles=particles.filter(p=>p.life>0);
+    if(alive && stepTimer>=speed){ stepTimer-=speed; step(); }
+  }
+  draw();
+  if(alive) rafId=requestAnimationFrame(loop);
+  else { gameState='dead'; drawDead(); }
+}
+
+function drawBg(){
+  ctx.fillStyle=C.bg; ctx.fillRect(0,0,W,H);
+  ctx.fillStyle=C.grid;
+  for(let x=0;x<COLS;x++) for(let y=0;y<ROWS;y++) ctx.fillRect(x*CELL+CELL/2-0.5,y*CELL+CELL/2-0.5,1,1);
+}
+
+function draw(){
+  drawBg();
+  // Food
+  ctx.fillStyle=C.food; ctx.fillRect(food.x*CELL+2,food.y*CELL+2,CELL-4,CELL-4);
+  // Bonus
+  if(bonus){
+    ctx.globalAlpha=Math.min(1,(bonus.timer/8000)*2);
+    ctx.fillStyle=C.tail; ctx.fillRect(bonus.x*CELL+1,bonus.y*CELL+1,CELL-2,CELL-2);
+    ctx.fillStyle=C.bg;   ctx.fillRect(bonus.x*CELL+4,bonus.y*CELL+4,CELL-8,CELL-8);
+    ctx.globalAlpha=1;
+  }
+  // Snake
+  for(let i=snake.length-1;i>=0;i--){
+    const s=snake[i];
+    if(i===0){
+      ctx.fillStyle=C.head; ctx.fillRect(s.x*CELL+1,s.y*CELL+1,CELL-2,CELL-2);
+      ctx.fillStyle=C.bg;
+      const [ex,ey,ex2,ey2]=eyePos(dir,s);
+      ctx.fillRect(ex-1,ey-1,3,3); ctx.fillRect(ex2-1,ey2-1,3,3);
+    } else {
+      ctx.fillStyle=(i%2===0)?C.head:C.tail;
+      ctx.fillRect(s.x*CELL+2,s.y*CELL+2,CELL-4,CELL-4);
+    }
+  }
+  // Particles
+  particles.forEach(p=>{
+    ctx.globalAlpha=Math.max(0,p.life);
+    ctx.fillStyle=C.head;
+    const sz=Math.max(1,Math.round(p.size*p.life));
+    ctx.fillRect(p.x-sz/2,p.y-sz/2,sz,sz);
+  });
+  ctx.globalAlpha=1;
+  // Pause
+  if(paused){
+    ctx.fillStyle='rgba(155,188,15,0.75)'; ctx.fillRect(0,0,W,H);
+    ctx.fillStyle=C.head; ctx.textAlign='center';
+    ctx.font='bold 16px "Courier New",monospace'; ctx.fillText('- PAUSED -',W/2,H/2-10);
+    ctx.font='11px "Courier New",monospace'; ctx.fillStyle=C.tail;
+    ctx.fillText('ENTER / SPACE to resume',W/2,H/2+14);
+    ctx.textAlign='start';
+  }
+}
+
+function eyePos(d,s){
+  const cx=s.x*CELL, cy=s.y*CELL;
+  if(d.x===1)  return [cx+CELL*0.75,cy+CELL*0.3,cx+CELL*0.75,cy+CELL*0.65];
+  if(d.x===-1) return [cx+CELL*0.25,cy+CELL*0.3,cx+CELL*0.25,cy+CELL*0.65];
+  if(d.y===-1) return [cx+CELL*0.3,cy+CELL*0.25,cx+CELL*0.65,cy+CELL*0.25];
+               return  [cx+CELL*0.3,cy+CELL*0.72,cx+CELL*0.65,cy+CELL*0.72];
+}
+
+function drawStart(){
+  drawBg();
+  ctx.textAlign='center';
+  ctx.fillStyle=C.head;
+  ctx.font='bold 32px "Courier New",monospace';
+  ctx.fillText('SNAKE', W/2, 80);
+  ctx.font='12px "Courier New",monospace';
+  ctx.fillStyle=C.tail;
+  ctx.fillText('ARROW KEYS  -  move', W/2, 130);
+  ctx.fillText('ENTER / SPACE  -  start', W/2, 155);
+  ctx.fillText('P  -  pause', W/2, 180);
+  if(Math.floor(Date.now()/600)%2===0){
+    ctx.fillStyle=C.head;
+    ctx.font='bold 13px "Courier New",monospace';
+    ctx.fillText('[ PRESS ENTER ]', W/2, 230);
+  }
+  ctx.textAlign='start';
+}
+
+function drawDead(){
+  drawBg();
+  ctx.textAlign='center';
+  ctx.fillStyle=C.head;
+  ctx.font='bold 24px "Courier New",monospace';
+  ctx.fillText('GAME OVER', W/2, 85);
+  ctx.font='14px "Courier New",monospace';
+  ctx.fillText('SCORE : ' + score, W/2, 135);
+  ctx.fillText('BEST  : ' + best,  W/2, 163);
+  ctx.fillStyle=C.tail;
+  ctx.font='11px "Courier New",monospace';
+  ctx.fillText('ENTER / SPACE  -  retry', W/2, 210);
+  ctx.textAlign='start';
+}
+
+function startGame(){
+  unlockAudio();
+  cancelAnimationFrame(rafId);
+  gameState='running';
+  init();
+  prevTs=performance.now();
+  rafId=requestAnimationFrame(loop);
+}
+
+// Blink loop for start/dead screens
+function idleLoop(){
+  if(gameState==='start') drawStart();
+  else if(gameState==='dead') drawDead();
+  if(gameState!=='running') requestAnimationFrame(idleLoop);
+}
+
+document.addEventListener('keydown',e=>{
+  switch(e.key){
+    case 'ArrowUp':    if(gameState==='running') inputDir={x:0,y:-1}; e.preventDefault(); break;
+    case 'ArrowDown':  if(gameState==='running') inputDir={x:0,y:1};  e.preventDefault(); break;
+    case 'ArrowLeft':  if(gameState==='running') inputDir={x:-1,y:0}; e.preventDefault(); break;
+    case 'ArrowRight': if(gameState==='running') inputDir={x:1,y:0};  e.preventDefault(); break;
+    case 'p': case 'P':
+      if(gameState==='running') paused=!paused;
+      break;
+    case 'Enter': case ' ':
+      e.preventDefault();
+      if(gameState==='start'||gameState==='dead') startGame();
+      else if(gameState==='running') paused=!paused;
+      break;
+  }
+});
+
+// Start idle loop immediately
+idleLoop();
+</script>
+</body>
+</html>
