@@ -155,7 +155,84 @@ canvas#board{ display:block; }
 }
 .gbtn:hover{ background:#003333; }
 .hi{ color:#ff0; }
-</style>
+
+/* ── 手機版 HUD ── */
+#mobile-hud{
+  display:none;
+  background:#000;
+  width:100%;
+  justify-content:space-around;
+  align-items:center;
+  padding:4px 8px;
+  border-bottom:1px solid #333;
+}
+.mh-item{ display:flex; flex-direction:column; align-items:center; gap:1px; }
+.mh-l{ color:#f0a000; font-size:6px; letter-spacing:1px; }
+#mobile-hud span:not(.mh-l){ color:#fff; font-size:11px; letter-spacing:1px; }
+
+/* 手機版遊戲區（canvas + NEXT 並排）*/
+#mobile-game-area{ display:contents; }
+#mobile-next-box{
+  display:none;
+  flex-direction:column;
+  align-items:center;
+  gap:4px;
+  padding:4px 4px 0;
+  background:#000;
+}
+#mobile-next-box .mh-l{ font-size:7px; }
+#mobile-next-cv{ background:#000018; border:1px solid #333; display:block; }
+#tet-mobile{ display:none; }
+
+@media(max-width:700px){
+  body{
+    flex-direction:column;
+    align-items:stretch;
+    justify-content:flex-start;
+    padding-top:0;
+    height:100vh;
+    height:100dvh;
+    overflow:hidden;
+    touch-action:none;
+  }
+  #app{
+    flex-direction:column;
+    align-items:stretch;
+    border:none;
+    box-shadow:none;
+    width:100vw;
+    overflow:hidden;
+  }
+  #left-panel,#right-panel{display:none;}
+  #center{
+    width:100vw;
+    align-items:stretch;
+  }
+  #topbar{display:none;}
+  #mobile-hud{display:flex;}
+  #mobile-game-area{
+    display:flex;
+    flex-direction:row;
+    align-items:flex-start;
+    justify-content:center;
+    width:100vw;
+  }
+  #board-wrap{
+    flex:0 0 auto;
+    position:relative;
+    border:3px solid #888;
+    box-shadow: 0 0 0 1px #000, 0 0 12px #4448;
+  }
+  #mobile-next-box{
+    display:flex;
+    flex:0 0 58px;
+    position:absolute;
+    left:calc(100% + 3px);
+    top:0;
+  }
+  .key-sub{display:none;}
+  #tet-mobile{display:flex;}
+}</style>
 </head>
 <body>
 <div id="app">
@@ -168,12 +245,24 @@ canvas#board{ display:block; }
 
   <!-- 中：遊戲 -->
   <div id="center">
+    <!-- 手機版 HUD 列 -->
+    <div id="mobile-hud">
+      <span class="mh-item"><span class="mh-l">SCORE</span><span id="mh-score">000000</span></span>
+      <span class="mh-item"><span class="mh-l">LV</span><span id="mh-level">00</span></span>
+      <span class="mh-item"><span class="mh-l">LINES</span><span id="mh-lines">000</span></span>
+    </div>
     <div id="topbar"><span>TETRIS</span></div>
+    <div id="mobile-game-area">
     <div id="board-wrap">
       <canvas id="board" width="200" height="400"></canvas>
+      <!-- 手機版 NEXT 預覽（絕對定位在 canvas 右側）-->
+      <div id="mobile-next-box">
+        <div class="mh-l">NEXT</div>
+        <canvas id="mobile-next-cv" width="48" height="48"></canvas>
+      </div>
       <div id="overlay">
         <h1>TETRIS</h1>
-        <div class="sub">
+        <div class="sub key-sub">
           ← → &nbsp; 移 動<br>
           ↑ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 旋 轉<br>
           ↓ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 加 速<br>
@@ -182,8 +271,9 @@ canvas#board{ display:block; }
           M &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 靜 音
         </div>
         <button class="gbtn" id="start-btn">▶ GAME START</button>
-        <div class="sub" style="font-size:6px;color:#555;margin-top:-6px">或按任意鍵開始</div>
+        <div class="sub key-sub" style="font-size:6px;color:#555;margin-top:-6px">或按任意鍵開始</div>
       </div>
+    </div>
     </div>
   </div>
 
@@ -263,6 +353,7 @@ const nCv=document.getElementById('next-cv'), nCtx=nCv.getContext('2d');
 let board,piece,nxt,score,level,lines,stats;
 let dropT=0,dropSpd=800,lastTs=0,animId=0;
 let running=false,paused=false,muted=false;
+let clearing=false,clearingRows=[];
 
 /* ================================================================
    Web Audio — NES Type-A (Korobeiniki) 完整旋律 + 和聲
@@ -411,12 +502,18 @@ function sfx(type){
   if(type==='move'){  sq(220,0.04,0.05); }
   else if(type==='rotate'){ sq(440,0.05,0.08); }
   else if(type==='land'){
+    // Thud: short descending tone + low noise hit
     const o=AC.createOscillator(),g=AC.createGain();
     o.type='square';
-    o.frequency.setValueAtTime(180,t);
-    o.frequency.exponentialRampToValueAtTime(60,t+0.1);
-    g.gain.setValueAtTime(0.13,t);g.gain.exponentialRampToValueAtTime(0.0001,t+0.12);
+    o.frequency.setValueAtTime(220,t);
+    o.frequency.exponentialRampToValueAtTime(55,t+0.08);
+    g.gain.setValueAtTime(0.32,t);g.gain.exponentialRampToValueAtTime(0.0001,t+0.12);
     o.connect(g);g.connect(AC.destination);o.start(t);o.stop(t+0.13);
+    // Second layer: low thud
+    const o2=AC.createOscillator(),g2=AC.createGain();
+    o2.type='sawtooth'; o2.frequency.value=80;
+    g2.gain.setValueAtTime(0.18,t);g2.gain.exponentialRampToValueAtTime(0.0001,t+0.09);
+    o2.connect(g2);g2.connect(AC.destination);o2.start(t);o2.stop(t+0.1);
   }
   else if(type==='clear'){
     [0,0.06,0.12,0.18].forEach((d,i)=>setTimeout(()=>sq(440+i*110,0.12,0.12),d*1000));
@@ -485,7 +582,7 @@ function lock(){
   }));
   if(dead){endGame();return;}
   sfx('land');
-  doLines();
+  if(doLines()) return; // flash in progress – finishClear() will resume
   stats[piece.d.id]=(stats[piece.d.id]||0)+1;
   renderStats();
   piece=nxt; nxt=mkPiece();
@@ -493,15 +590,63 @@ function lock(){
 }
 
 function doLines(){
-  let n=0;
+  // Collect full rows without removing yet
+  const full=[];
   for(let r=ROWS-1;r>=0;r--){
-    if(board[r].every(v=>v)){board.splice(r,1);board.unshift(new Array(COLS).fill(0));n++;r++;}
+    if(board[r].every(v=>v)) full.push(r);
   }
-  if(!n)return;
-  n===4?sfx('tetris'):sfx('clear');
+  if(!full.length) return false;
+
+  clearingRows=full;
+  clearing=true;
+  cancelAnimationFrame(animId);
+  full.length===4?sfx('tetris'):sfx('clear');
+
+  // 4 blinks × 55ms = ~440ms flash
+  const FLASHES=4, INTERVAL=55;
+  let tick=0;
+  function flashTick(){
+    tick++;
+    renderWithFlash(tick%2===1); // odd=white, even=original
+    if(tick<FLASHES*2) setTimeout(flashTick,INTERVAL);
+    else finishClear();
+  }
+  setTimeout(flashTick,INTERVAL);
+  return true;
+}
+
+function renderWithFlash(white){
+  bCtx.fillStyle='#000012'; bCtx.fillRect(0,0,bCv.width,bCv.height);
+  bCtx.strokeStyle='#0d0d28'; bCtx.lineWidth=1;
+  for(let r=0;r<ROWS;r++) for(let c=0;c<COLS;c++) bCtx.strokeRect(c*SZ,r*SZ,SZ,SZ);
+  board.forEach((row,r)=>row.forEach((v,c)=>{
+    if(!v) return;
+    if(white && clearingRows.includes(r)){
+      bCtx.fillStyle='#fff'; bCtx.fillRect(c*SZ+1,r*SZ+1,SZ-2,SZ-2);
+    } else { drawBlock(bCtx,c*SZ,r*SZ,v,SZ); }
+  }));
+}
+
+function finishClear(){
+  const n=clearingRows.length;
+  // Sort descending; apply +offset to compensate for prior splice+unshift shifts
+  clearingRows.sort((a,b)=>b-a);
+  let offset=0;
+  clearingRows.forEach(r=>{
+    board.splice(r+offset,1); board.unshift(new Array(COLS).fill(0));
+    offset++;
+  });
+  clearingRows=[]; clearing=false;
   lines+=n; score+=PTS[n]*(level+1);
   level=Math.floor(lines/10); dropSpd=spd(level);
   updateHUD();
+  // Spawn next piece
+  stats[piece.d.id]=(stats[piece.d.id]||0)+1;
+  renderStats();
+  piece=nxt; nxt=mkPiece();
+  if(hit(board,piece.x,piece.y,piece.shape)){endGame();return;}
+  lastTs=performance.now();
+  animId=requestAnimationFrame(loop);
 }
 
 /* ── 繪製 ── */
@@ -550,7 +695,7 @@ function render(){
   piece.shape.forEach((row,r)=>row.forEach((v,c)=>{
     if(v)drawBlock(bCtx,(piece.x+c)*SZ,(piece.y+r)*SZ,piece.d.id,SZ);
   }));
-  // Next
+  // Next (desktop)
   nCtx.fillStyle='#000018'; nCtx.fillRect(0,0,nCv.width,nCv.height);
   const ns2=16,sh2=nxt.d.S[0];
   const nx2=Math.floor((nCv.width/ns2-sh2[0].length)/2);
@@ -558,6 +703,18 @@ function render(){
   sh2.forEach((row,r)=>row.forEach((v,c)=>{
     if(v)drawBlock(nCtx,(nx2+c)*ns2,(ny2+r)*ns2,nxt.d.id,ns2);
   }));
+  // Next (手機版)
+  const mnCv=document.getElementById('mobile-next-cv');
+  if(mnCv){
+    const mnCtx=mnCv.getContext('2d');
+    mnCtx.fillStyle='#000018'; mnCtx.fillRect(0,0,mnCv.width,mnCv.height);
+    const ms3=11,sh3=nxt.d.S[0];
+    const nx3=Math.floor((mnCv.width/ms3-sh3[0].length)/2);
+    const ny3=Math.floor((mnCv.height/ms3-sh3.length)/2);
+    sh3.forEach((row,r)=>row.forEach((v,c)=>{
+      if(v)drawBlock(mnCtx,(nx3+c)*ms3,(ny3+r)*ms3,nxt.d.id,ms3);
+    }));
+  }
 }
 
 /* ── HUD ── */
@@ -566,6 +723,13 @@ function updateHUD(){
   document.getElementById('v-score').textContent=pad(score,6);
   document.getElementById('v-lines').textContent=pad(lines,3);
   document.getElementById('v-level').textContent=pad(level,2);
+  // 手機版 HUD
+  const ms=document.getElementById('mh-score');
+  const ml=document.getElementById('mh-level');
+  const mn=document.getElementById('mh-lines');
+  if(ms) ms.textContent=pad(score,6);
+  if(ml) ml.textContent=pad(level,2);
+  if(mn) mn.textContent=pad(lines,3);
 }
 
 /* ── 統計面板 ── */
@@ -633,7 +797,7 @@ function handleSD(dt){
 }
 
 function loop(ts){
-  if(!running||paused)return;
+  if(!running||paused||clearing)return;
   const dt=ts-lastTs; lastTs=ts;
   handleDAS(dt);
   handleSD(dt);
@@ -672,7 +836,7 @@ function endGame(){
     <div class="sub">SCORE<br><span class="hi" style="font-size:16px">${pad(score,6)}</span></div>
     <div class="sub">LEVEL ${pad(level,2)} &nbsp; LINES ${pad(lines,3)}</div>
     <button class="gbtn" id="start-btn">▶ PLAY AGAIN</button>
-    <div class="sub" style="font-size:6px;color:#555;margin-top:-6px">或按任意鍵重新開始</div>
+    <div class="sub key-sub" style="font-size:6px;color:#555;margin-top:-6px">或按任意鍵重新開始</div>
   `;
   ov.style.display='flex';
   document.getElementById('start-btn').addEventListener('click',startGame);
@@ -686,7 +850,7 @@ function togglePause(){
     const ov=document.getElementById('overlay');
     ov.innerHTML=`
       <h1 style="font-size:16px;color:#0ff;letter-spacing:6px">PAUSE</h1>
-      <div class="sub" style="margin-top:4px">P 或任意鍵 &nbsp; 繼續<br>ESC &nbsp; 回主選單</div>
+      <div class="sub key-sub" style="margin-top:4px">P 或任意鍵 &nbsp; 繼續<br>ESC &nbsp; 回主選單</div>
     `;
     ov.style.display='flex';
   }else{
@@ -729,7 +893,7 @@ document.addEventListener('keydown',e=>{
     const ov=document.getElementById('overlay');
     ov.innerHTML=`
       <h1>TETRIS</h1>
-      <div class="sub">
+      <div class="sub key-sub">
         ← → &nbsp; 移 動<br>
         ↑ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 旋 轉<br>
         ↓ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 加 速<br>
@@ -738,7 +902,7 @@ document.addEventListener('keydown',e=>{
         M &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 靜 音
       </div>
       <button class="gbtn" id="start-btn">▶ GAME START</button>
-      <div class="sub" style="font-size:6px;color:#555;margin-top:-6px">或按任意鍵開始</div>
+      <div class="sub key-sub" style="font-size:6px;color:#555;margin-top:-6px">或按任意鍵開始</div>
     `;
     ov.style.display='flex';
     document.getElementById('start-btn').addEventListener('click',startGame);
@@ -786,17 +950,17 @@ document.addEventListener('keydown',e=>{
 /* ── Mobile resize ─────────────────────────────────── */
 function resizeGame(){
   if(window.innerWidth>700)return;
-  // Hide side panels already handled by CSS.
-  // Available area: full width, height minus topbar(32) + controls(~170) + padding(~12)
+  const NEXT_W=58;
+  const HUD_H=document.getElementById('mobile-hud').offsetHeight||28;
+  const CTRL_H=document.getElementById('tet-mobile')
+               ? document.getElementById('tet-mobile').offsetHeight||170 : 170;
   const vw=window.innerWidth;
   const vh=window.innerHeight;
-  const availW=vw-4;            // 2px padding each side
-  const availH=vh-32-170-12;   // topbar + controls + padding
+  const availW=vw-NEXT_W;
+  const availH=vh-HUD_H-CTRL_H-8;
   const newSZ=Math.max(14,Math.floor(Math.min(availW/COLS, availH/ROWS)));
-  if(newSZ===SZ)return;
   SZ=newSZ;
   bCv.width=COLS*SZ; bCv.height=ROWS*SZ;
-  // Redraw
   bCtx.fillStyle='#000012'; bCtx.fillRect(0,0,bCv.width,bCv.height);
   if(typeof render==='function'&&board) render();
 }
@@ -809,7 +973,6 @@ setTimeout(resizeGame,0);
   const css=document.createElement('style');
   css.textContent=`
     #tet-mobile{
-      display:none;
       flex-direction:column;
       align-items:center;
       gap:6px;
@@ -832,29 +995,6 @@ setTimeout(resizeGame,0);
     .tBtn:active{background:#223;}
     #tBtn-drop{width:136px;font-size:13px;color:#ff0;border-color:#ff0;}
     #tBtn-pause{width:84px;font-size:11px;color:#0cf;border-color:#0cf;}
-    @media(max-width:700px){
-      body{
-        flex-direction:column;
-        align-items:stretch;
-        justify-content:flex-start;
-        padding-top:4px;
-        height:100vh;
-        height:100dvh;
-        overflow:hidden;
-      }
-      #app{
-        flex-direction:column;
-        align-items:center;
-        border:none;
-        box-shadow:none;
-        width:100%;
-      }
-      #left-panel,#right-panel{display:none;}
-      #center{width:100%;}
-      #topbar{border-left:none;border-right:none;}
-      #board-wrap{border-left:none;border-right:none;border-bottom:none;}
-      #tet-mobile{display:flex;}
-    }
   `;
   document.head.appendChild(css);
 
@@ -882,15 +1022,32 @@ setTimeout(resizeGame,0);
     const e=new KeyboardEvent(type,{key:keyName,bubbles:true,cancelable:true});
     document.dispatchEvent(e);
   }
+
+  // Debounce: ignore repeated triggers within DEBOUNCE_MS
+  const DEBOUNCE_MS=120;
+  const lastFire={};
+  function fireDbc(key,type='keydown'){
+    const now=Date.now();
+    if((now-(lastFire[key]||0))<DEBOUNCE_MS) return;
+    lastFire[key]=now;
+    fire(key,type);
+  }
+
   function hold(id,key){
     const el=document.getElementById(id);
     if(!el)return;
     let iv=null;
+    let touched=false;
     function dn(e){
-      fire(key,'keydown'); e.preventDefault();
+      if(e.type==='mousedown'&&touched){e.preventDefault();return;} // suppress ghost click
+      touched=(e.type==='touchstart');
+      fireDbc(key,'keydown'); e.preventDefault();
       iv=setInterval(()=>fire(key,'keydown'),80);
     }
-    function up(e){ clearInterval(iv); iv=null; fire(key,'keyup'); e.preventDefault(); }
+    function up(e){
+      clearInterval(iv); iv=null;
+      fire(key,'keyup'); e.preventDefault();
+    }
     el.addEventListener('touchstart',dn,{passive:false});
     el.addEventListener('touchend',up,{passive:false});
     el.addEventListener('mousedown',dn);
@@ -899,7 +1056,12 @@ setTimeout(resizeGame,0);
   function tap(id,key){
     const el=document.getElementById(id);
     if(!el)return;
-    function dn(e){ fire(key,'keydown'); e.preventDefault(); }
+    let touched=false;
+    function dn(e){
+      if(e.type==='mousedown'&&touched){e.preventDefault();return;} // suppress ghost click
+      touched=(e.type==='touchstart');
+      fireDbc(key,'keydown'); e.preventDefault();
+    }
     el.addEventListener('touchstart',dn,{passive:false});
     el.addEventListener('mousedown',dn);
   }
@@ -913,21 +1075,29 @@ setTimeout(resizeGame,0);
   tap('tBtn-pause','p');
 
   // Swipe on game canvas
-  let sx=null,sy=null;
+  // Swipe on game canvas (desktop/tablet only – mobile uses buttons)
+  if(window.innerWidth>700){
+  let sx=null,sy=null,st=null;
   const gcv=document.getElementById('board');
   if(gcv){
-    gcv.addEventListener('touchstart',e=>{sx=e.touches[0].clientX;sy=e.touches[0].clientY;e.preventDefault();},{passive:false});
+    gcv.addEventListener('touchstart',e=>{
+      sx=e.touches[0].clientX;sy=e.touches[0].clientY;st=Date.now();
+      e.preventDefault();
+    },{passive:false});
     gcv.addEventListener('touchend',e=>{
       if(sx===null)return;
       const dx=e.changedTouches[0].clientX-sx;
       const dy=e.changedTouches[0].clientY-sy;
       const ax=Math.abs(dx),ay=Math.abs(dy);
-      if(ax<12&&ay<12){fire('ArrowUp');sx=null;return;}
-      if(ax>ay){ fire(dx>0?'ArrowRight':'ArrowLeft'); }
-      else if(dy>0){ fire('ArrowDown'); }
-      else { fire('ArrowUp'); }
-      sx=null;
+      const elapsed=Date.now()-st;
+      sx=null;sy=null;st=null;
+      if(ax<20&&ay<20){ fire('ArrowUp'); return; }
+      if(elapsed>600) return;
+      if(ax>ay && ax>30){ fire(dx>0?'ArrowRight':'ArrowLeft'); }
+      else if(dy>0 && ay>30){ fire('ArrowDown'); }
+      else if(ay>30){ fire('ArrowUp'); }
     },{passive:false});
+  }
   }
 })();
 
