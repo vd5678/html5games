@@ -422,74 +422,151 @@
   const cv = document.getElementById('thumb-drpill');
   const ctx = cv.getContext('2d');
   const W=224, H=256;
-  const CELL=13, COLS=8, ROWS=16;
-  const WALL=8;
-  const BX=WALL, BY=WALL;
+  const CELL=12, COLS=8, ROWS=16;
+  const WALL=8, BOT_PAD=12;
   const FILL=['#cc2020','#c8a800','#1845c8'];
   const LITE=['#f07070','#f0e060','#6090f8'];
   const DARK=['#700808','#705800','#0c2070'];
   const R=0,Y=1,B=2;
 
+  // Centred layout matching actual game
+  const SIDEBAR_W = Math.round(CELL*3.2);
+  const bw = COLS*CELL + WALL*2;
+  const bh = ROWS*CELL + WALL + BOT_PAD;
+  const totalW = bw + 6 + SIDEBAR_W;
+  const OX = Math.round((W - totalW) / 2);
+  const OY = Math.round((H - bh) / 2);
+  const BX = OX + WALL, BY = OY + WALL;
+
   ctx.fillStyle='#000'; ctx.fillRect(0,0,W,H);
 
-  // Bottle
-  const bw=COLS*CELL+WALL*2, bh=ROWS*CELL+WALL+12;
-  const g=ctx.createLinearGradient(0,0,bw,0);
+  // Canvas border glow (matching game)
+  ctx.shadowColor='#0cf'; ctx.shadowBlur=10;
+  ctx.strokeStyle='#1a3a66'; ctx.lineWidth=2;
+  ctx.strokeRect(OX-1, OY-1, bw+2, bh+2);
+  ctx.shadowBlur=0;
+
+  // Bottle glass
+  const g=ctx.createLinearGradient(OX,0,OX+bw,0);
   g.addColorStop(0,'#99ccff'); g.addColorStop(0.08,'#1a3a66');
   g.addColorStop(0.92,'#1a3a66'); g.addColorStop(1,'#99ccff');
-  ctx.fillStyle=g; ctx.beginPath(); ctx.roundRect(0,WALL-2,bw,bh,6); ctx.fill();
+  ctx.fillStyle=g; ctx.beginPath(); ctx.roundRect(OX,OY+WALL-2,bw,bh,6); ctx.fill();
+  // Playfield
   ctx.fillStyle='#000'; ctx.fillRect(BX,BY,COLS*CELL,ROWS*CELL);
+  // Grid
+  ctx.strokeStyle='#0d0d22'; ctx.lineWidth=0.5;
+  for(let c=1;c<COLS;c++){ctx.beginPath();ctx.moveTo(BX+c*CELL,BY);ctx.lineTo(BX+c*CELL,BY+ROWS*CELL);ctx.stroke();}
+  for(let r=1;r<ROWS;r++){ctx.beginPath();ctx.moveTo(BX,BY+r*CELL);ctx.lineTo(BX+COLS*CELL,BY+r*CELL);ctx.stroke();}
   // Neck
   const nw=Math.round(COLS*CELL*0.42), nx=BX+Math.round((COLS*CELL-nw)/2);
-  ctx.fillStyle='#1a3a66'; ctx.fillRect(nx-WALL,0,nw+WALL*2,WALL);
-  ctx.fillStyle='#99ccff'; ctx.fillRect(nx-WALL,0,WALL,WALL); ctx.fillRect(nx+nw,0,WALL,WALL);
+  ctx.fillStyle='#1a3a66'; ctx.fillRect(nx-WALL,OY,nw+WALL*2,WALL);
+  ctx.fillStyle='#99ccff'; ctx.fillRect(nx-WALL,OY,WALL,WALL); ctx.fillRect(nx+nw,OY,WALL,WALL);
 
-  function cap(c,r,col){
-    const px=BX+c*CELL, py=BY+r*CELL;
-    ctx.fillStyle=FILL[col]; ctx.beginPath(); ctx.roundRect(px+1,py+1,CELL-2,CELL-2,2); ctx.fill();
-    ctx.fillStyle=LITE[col]; ctx.fillRect(px+2,py+2,CELL-5,2);
+  // Capsule half
+  function cap(col,r,c){
+    const px=BX+c*CELL, py=BY+r*CELL, cr=Math.max(1,Math.round(CELL*0.18));
+    ctx.fillStyle=FILL[col]; ctx.beginPath(); ctx.roundRect(px+1,py+1,CELL-2,CELL-2,cr); ctx.fill();
+    ctx.fillStyle=LITE[col]; ctx.fillRect(px+2,py+2,CELL-5,1); ctx.fillRect(px+2,py+2,1,CELL-5);
   }
-  function virus(c,r,col){
+  // Virus
+  function virus(col,r,c){
     const px=BX+c*CELL, py=BY+r*CELL;
     const cx=px+CELL/2, cy=py+CELL/2;
-    ctx.fillStyle=FILL[col]; ctx.beginPath();
-    ctx.ellipse(cx,cy,CELL/2-1,CELL/2-1,0,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle=FILL[col]; ctx.beginPath(); ctx.ellipse(cx,cy,CELL/2-1,CELL/2-1,0,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle=DARK[col];
+    for(let a=0;a<8;a++){const ag=a*Math.PI/4;ctx.beginPath();ctx.arc(cx+Math.cos(ag)*(CELL/2-2),cy+Math.sin(ag)*(CELL/2-2),1,0,Math.PI*2);ctx.fill();}
     ctx.fillStyle='#fff'; ctx.fillRect(cx-3,cy-2,2,2); ctx.fillRect(cx+1,cy-2,2,2);
     ctx.fillStyle='#111'; ctx.fillRect(cx-2,cy-1,1,1); ctx.fillRect(cx+2,cy-1,1,1);
-    ctx.fillStyle=DARK[col]; ctx.fillRect(cx-2,cy+2,4,1);
+    ctx.fillStyle=DARK[col]; ctx.fillRect(cx-2,cy+1,4,1);
   }
 
-  // Scattered viruses in lower half
-  const vmap=[[R,3,9],[Y,6,10],[B,1,11],[R,5,12],[Y,2,13],[B,7,11],[R,4,14],[Y,0,13],[B,5,10],[R,2,12]];
-  vmap.forEach(([c,col,r])=>virus(col,r,c));
+  // Viruses in lower rows
+  [[R,0,11],[Y,3,10],[B,6,9],[R,5,12],[Y,2,13],[B,7,11],[R,4,12],[Y,1,14],[B,5,10],[R,7,13]]
+    .forEach(([col,c,r])=>virus(col,r,c));
 
-  // A few stacked capsules
-  cap(0,8,B); cap(1,8,R);
-  cap(3,7,Y); cap(4,7,Y);
-  cap(6,9,R); cap(7,9,B);
-  // Active capsule falling
-  cap(3,4,R); cap(4,4,Y);
+  // Stacked capsules
+  cap(B,8,0); cap(R,8,1);
+  cap(Y,8,3); cap(Y,8,4);
+  cap(R,9,6); cap(B,9,7);
+  cap(B,7,2); cap(Y,7,3);
+
+  // Active capsule
+  cap(R,4,3); cap(Y,4,4);
   // Ghost
-  const gx0=BX+3*CELL, gx1=BX+4*CELL, gy=BY+8*CELL;
   ctx.globalAlpha=0.22;
-  ctx.fillStyle=FILL[R]; ctx.beginPath(); ctx.roundRect(gx0+1,gy+1,CELL-2,CELL-2,2); ctx.fill();
-  ctx.fillStyle=FILL[Y]; ctx.beginPath(); ctx.roundRect(gx1+1,gy+1,CELL-2,CELL-2,2); ctx.fill();
+  cap(R,9,3); cap(Y,9,4);
   ctx.globalAlpha=1;
+  // Connector bar on active capsule
+  ctx.fillStyle=FILL[R];
+  ctx.fillRect(BX+3*CELL+CELL-1, BY+4*CELL+2, 2, CELL-4);
 
   // Sidebar
-  const SX=bw+4, SW=W-SX-2;
-  ctx.fillStyle='#0a0a1a'; ctx.fillRect(SX,BY,SW,bh-WALL);
-  ctx.fillStyle='#556'; ctx.font='bold 6px monospace'; ctx.textAlign='center';
-  ctx.fillText('NEXT',SX+SW/2,BY+11);
-  cap(0,0,Y); // next preview trick: draw at position
-  const np1=SX+4, np2=SX+4+CELL;
-  ctx.fillStyle=FILL[Y]; ctx.beginPath(); ctx.roundRect(np1,BY+14,CELL-2,CELL-2,2); ctx.fill();
-  ctx.fillStyle=FILL[B]; ctx.beginPath(); ctx.roundRect(np2,BY+14,CELL-2,CELL-2,2); ctx.fill();
-  function sLabel(t,y){ctx.fillStyle='#556';ctx.font='bold 6px monospace';ctx.textAlign='center';ctx.fillText(t,SX+SW/2,y);}
-  function sVal(t,y,c){ctx.fillStyle=c;ctx.font='bold 8px monospace';ctx.textAlign='center';ctx.fillText(t,SX+SW/2,y);}
-  sLabel('SCORE',BY+46); sVal('0084200',BY+56,'#ff0');
-  sLabel('LEVEL', BY+70); sVal('07',BY+80,'#0f0');
-  sLabel('VIRUS', BY+94); sVal('06',BY+104,'#f44');
+  const SX = OX+bw+4, mid = SX+SIDEBAR_W/2;
+  function sLbl(t,y){ctx.fillStyle='#556';ctx.font='5px "Press Start 2P",monospace';ctx.textAlign='center';ctx.fillText(t,mid,y);}
+  function sVal(t,y,col){ctx.fillStyle=col;ctx.font='6px "Press Start 2P",monospace';ctx.textAlign='center';ctx.fillText(t,mid,y);}
+
+  let sy=BY+7;
+  sLbl('NEXT',sy); sy+=9;
+  // Next capsule preview
+  const nc=Math.round(CELL*0.8), ncr=Math.max(1,Math.round(nc*0.18));
+  const npx=Math.round(SX+(SIDEBAR_W-nc*2)/2);
+  ctx.fillStyle=FILL[Y]; ctx.beginPath(); ctx.roundRect(npx,sy,nc-1,nc-1,ncr); ctx.fill();
+  ctx.fillStyle=LITE[Y]; ctx.fillRect(npx+1,sy+1,nc-4,1);
+  ctx.fillStyle=FILL[B]; ctx.beginPath(); ctx.roundRect(npx+nc,sy,nc-1,nc-1,ncr); ctx.fill();
+  ctx.fillStyle=LITE[B]; ctx.fillRect(npx+nc+1,sy+1,nc-4,1);
+  sy+=nc+10;
+
+  sLbl('SCORE',sy); sy+=7; sVal('0047200',sy,'#ff0'); sy+=CELL+4;
+  sLbl('LEVEL',sy);  sy+=7; sVal('07',sy,'#0f0');     sy+=CELL+4;
+  sLbl('VIRUS',sy);  sy+=7; sVal('06',sy,'#f44');
+
+  // Doctor sprite at bottom-right corner (2× scale)
+  const DS = 2;
+  const DW = 24*DS, DH = 42*DS;
+  const DX = W - DW - 2, DY = H - DH - 2;
+  const PFILL=['#cc2020','#c8a800','#1845c8'];
+  const PLITE=['#f07070','#f0e060','#6090f8'];
+  ctx.save();
+  ctx.translate(DX, DY);
+  ctx.scale(DS, DS);
+  const x=0, y=0;
+  // White coat
+  ctx.fillStyle='#eeeeff'; ctx.fillRect(x+1,y+10,16,18);
+  ctx.fillStyle='#ccc'; ctx.fillRect(x+5,y+10,3,6); ctx.fillRect(x+10,y+10,3,6);
+  // Skin
+  ctx.fillStyle='#f0b080'; ctx.fillRect(x+3,y+1,12,11);
+  // Hair
+  ctx.fillStyle='#2a1a0a'; ctx.fillRect(x+3,y+1,12,4);
+  // Eyes
+  ctx.fillStyle='#111'; ctx.fillRect(x+5,y+6,2,2); ctx.fillRect(x+11,y+6,2,2);
+  // Glasses
+  ctx.strokeStyle='#555'; ctx.lineWidth=0.8;
+  ctx.strokeRect(x+4,y+5,4,3); ctx.strokeRect(x+10,y+5,4,3);
+  ctx.beginPath(); ctx.moveTo(x+8,y+6); ctx.lineTo(x+10,y+6); ctx.stroke();
+  // Smile
+  ctx.fillStyle='#b06040'; ctx.fillRect(x+6,y+10,6,1);
+  // Stethoscope
+  ctx.fillStyle='#888'; ctx.fillRect(x+8,y+12,1,7); ctx.fillRect(x+5,y+19,7,1);
+  ctx.beginPath(); ctx.arc(x+5,y+21,2,0,Math.PI*2); ctx.fillStyle='#aaa'; ctx.fill();
+  // Arms
+  ctx.fillStyle='#eeeeff';
+  ctx.fillRect(x-1,y+11,3,10); ctx.fillRect(x+16,y+11,3,10);
+  // Hands
+  ctx.fillStyle='#f0b080';
+  ctx.fillRect(x-1,y+21,3,3); ctx.fillRect(x+16,y+21,3,3);
+  // Capsule in hand
+  const pw=4, ph=5, pr=2;
+  ctx.fillStyle=PFILL[0]; ctx.beginPath(); ctx.roundRect(x+18,y+17,pw,ph,pr); ctx.fill();
+  ctx.fillStyle=PLITE[0]; ctx.fillRect(x+19,y+18,pw-2,1);
+  ctx.fillStyle=PFILL[2]; ctx.beginPath(); ctx.roundRect(x+18+pw,y+17,pw,ph,pr); ctx.fill();
+  ctx.fillStyle=PLITE[2]; ctx.fillRect(x+19+pw,y+18,pw-2,1);
+  // Legs
+  ctx.fillStyle='#334';
+  ctx.fillRect(x+2,y+28,5,9); ctx.fillRect(x+11,y+28,5,7);
+  // Shoes
+  ctx.fillStyle='#111';
+  ctx.fillRect(x+1,y+37,6,3); ctx.fillRect(x+10,y+35,6,3);
+  ctx.restore();
 })();
 </script>
 </body>
