@@ -1022,15 +1022,32 @@ setTimeout(resizeGame,0);
     const e=new KeyboardEvent(type,{key:keyName,bubbles:true,cancelable:true});
     document.dispatchEvent(e);
   }
+
+  // Debounce: ignore repeated triggers within DEBOUNCE_MS
+  const DEBOUNCE_MS=120;
+  const lastFire={};
+  function fireDbc(key,type='keydown'){
+    const now=Date.now();
+    if((now-(lastFire[key]||0))<DEBOUNCE_MS) return;
+    lastFire[key]=now;
+    fire(key,type);
+  }
+
   function hold(id,key){
     const el=document.getElementById(id);
     if(!el)return;
     let iv=null;
+    let touched=false;
     function dn(e){
-      fire(key,'keydown'); e.preventDefault();
+      if(e.type==='mousedown'&&touched){e.preventDefault();return;} // suppress ghost click
+      touched=(e.type==='touchstart');
+      fireDbc(key,'keydown'); e.preventDefault();
       iv=setInterval(()=>fire(key,'keydown'),80);
     }
-    function up(e){ clearInterval(iv); iv=null; fire(key,'keyup'); e.preventDefault(); }
+    function up(e){
+      clearInterval(iv); iv=null;
+      fire(key,'keyup'); e.preventDefault();
+    }
     el.addEventListener('touchstart',dn,{passive:false});
     el.addEventListener('touchend',up,{passive:false});
     el.addEventListener('mousedown',dn);
@@ -1039,7 +1056,12 @@ setTimeout(resizeGame,0);
   function tap(id,key){
     const el=document.getElementById(id);
     if(!el)return;
-    function dn(e){ fire(key,'keydown'); e.preventDefault(); }
+    let touched=false;
+    function dn(e){
+      if(e.type==='mousedown'&&touched){e.preventDefault();return;} // suppress ghost click
+      touched=(e.type==='touchstart');
+      fireDbc(key,'keydown'); e.preventDefault();
+    }
     el.addEventListener('touchstart',dn,{passive:false});
     el.addEventListener('mousedown',dn);
   }
