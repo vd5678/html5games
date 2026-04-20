@@ -753,6 +753,14 @@ document.addEventListener('keydown', e => {
         stuck.stuck = false;
         stuck.vx = 1.5 + Math.random() * 0.5 - 0.25;
         stuck.vy = -2.5;
+      } else if (pad.laser) {
+        laserCooldown -= 999;
+        if (laserCooldown <= 0) {
+          lasers.push({ x: pad.x + 4, y: PAD_Y });
+          lasers.push({ x: pad.x + pad.w - 4, y: PAD_Y });
+          sndLaser();
+          laserCooldown = 300;
+        }
       } else {
         STATE = 'PAUSED';
         flashMsg = 'PAUSED';
