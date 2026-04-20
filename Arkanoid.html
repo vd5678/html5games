@@ -45,11 +45,23 @@
   /* ── Mobile Layout ── */
   #mobile-controls {
     display: none;
-    justify-content: center;
+    flex-direction: column;
     align-items: center;
-    gap: 12px;
-    margin-top: 10px;
+    gap: 8px;
+    margin-top: 6px;
     width: 100%;
+  }
+  #ctrl-func-row {
+    display: flex;
+    justify-content: center;
+    gap: 16px;
+    width: 100%;
+  }
+  #ctrl-dir-row {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    padding: 0 12px;
   }
   .mBtn {
     background: #1a1a2e;
@@ -101,10 +113,14 @@
     <canvas id="game" width="672" height="768"></canvas>
   </div>
   <div id="mobile-controls">
-    <button class="mBtn" id="btn-left">◀</button>
-    <button class="mBtn" id="btn-fire">FIRE / PAUSE</button>
-    <button class="mBtn" id="btn-right">▶</button>
-    <button class="mBtn" id="btn-menu">ESC</button>
+    <div id="ctrl-func-row">
+      <button class="mBtn" id="btn-fire">FIRE / PAUSE</button>
+      <button class="mBtn" id="btn-menu">ESC</button>
+    </div>
+    <div id="ctrl-dir-row">
+      <button class="mBtn" id="btn-left">◀</button>
+      <button class="mBtn" id="btn-right">▶</button>
+    </div>
   </div>
 </div>
 
@@ -128,12 +144,13 @@ function resizeGame() {
   const isMobile = vw <= 700;
   let availW, availH;
   if (isMobile) {
-    // On mobile: full width minus small padding; height minus sidebar bar (~36px), controls (~60px), padding (~12px)
+    // On mobile: full width minus small padding; height minus sidebar bar (~36px), controls (~108px = 2 rows), padding (~12px)
     availW = vw - 8;
-    availH = vh - 36 - 60 - 16;
+    availH = vh - 36 - 108 - 16;
   } else {
-    availW = vw * 0.75 - SIDEBAR_W - GAP;
-    availH = vh * 0.75;
+    // Desktop: fill viewport minus sidebar, with safe padding
+    availW = vw - SIDEBAR_W - GAP - 32;
+    availH = vh - 32;
   }
   SCALE = Math.max(1, Math.floor(Math.min(availW / W, availH / H)));
   canvas.width  = W * SCALE;
