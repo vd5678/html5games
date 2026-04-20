@@ -247,13 +247,16 @@ function draw(){
     }
   }
   // Particles
+  ctx.save();
   particles.forEach(p=>{
+    const sz=Math.max(1,Math.round(p.size*p.life));
+    const px=p.x-sz/2, py=p.y-sz/2;
+    if(px+sz<0||px>W||py+sz<0||py>H) return; // out of canvas – skip
     ctx.globalAlpha=Math.max(0,p.life);
     ctx.fillStyle=C.head;
-    const sz=Math.max(1,Math.round(p.size*p.life));
-    ctx.fillRect(p.x-sz/2,p.y-sz/2,sz,sz);
+    ctx.fillRect(px,py,sz,sz);
   });
-  ctx.globalAlpha=1;
+  ctx.restore();
   // Pause
   if(paused){
     ctx.fillStyle='rgba(155,188,15,0.75)'; ctx.fillRect(0,0,W,H);
