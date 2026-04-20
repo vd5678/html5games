@@ -12,6 +12,7 @@
     justify-content: center;
     align-items: center;
     height: 100vh;
+    height: 100dvh;
     overflow: hidden;
     font-family: 'Courier New', monospace;
   }
@@ -36,6 +37,7 @@
     flex-shrink: 0;
     line-height: 2;
     text-shadow: 0 0 8px #0ff;
+    order: 2;
   }
   #sidebar .label { color: #aaa; }
   #sidebar .value { color: #ff0; font-weight: bold; }
@@ -67,9 +69,11 @@
   #btn-menu  { font-size: 13px; padding: 10px 16px; border-color: #f44; color: #f44; box-shadow: 0 0 8px #f446; }
 
   @media (max-width: 700px) {
-    body { align-items: flex-start; padding-top: 8px; }
-    #wrapper { flex-direction: column; align-items: center; gap: 8px; }
-    #sidebar { display: flex; flex-wrap: wrap; gap: 0 18px; width: 100%; justify-content: center; font-size: 13px !important; }
+    body { align-items: flex-start; padding-top: 4px; overflow: hidden; }
+    #wrapper { flex-direction: column; align-items: center; gap: 4px; width: 100%; }
+    #sidebar { order: 0; display: flex; flex-wrap: wrap; gap: 0 18px; width: 100%; justify-content: center; font-size: 13px !important; }
+    #canvas-container { order: 1; }
+    #mobile-controls { order: 2; }
     #sidebar br { display: none; }
     #mobile-controls { display: flex; }
   }
@@ -77,9 +81,6 @@
 </head>
 <body>
 <div id="wrapper">
-  <div id="canvas-container">
-    <canvas id="game" width="672" height="768"></canvas>
-  </div>
   <div id="sidebar">
     <div class="label">SCORE</div>
     <div class="value" id="s-score">0</div>
@@ -96,12 +97,15 @@
     <br>
     <div id="s-power" style="color:#0f0;font-size:11px;"></div>
   </div>
-</div>
-<div id="mobile-controls">
-  <button class="mBtn" id="btn-left">◀</button>
-  <button class="mBtn" id="btn-fire">FIRE / PAUSE</button>
-  <button class="mBtn" id="btn-right">▶</button>
-  <button class="mBtn" id="btn-menu">ESC</button>
+  <div id="canvas-container">
+    <canvas id="game" width="672" height="768"></canvas>
+  </div>
+  <div id="mobile-controls">
+    <button class="mBtn" id="btn-left">◀</button>
+    <button class="mBtn" id="btn-fire">FIRE / PAUSE</button>
+    <button class="mBtn" id="btn-right">▶</button>
+    <button class="mBtn" id="btn-menu">ESC</button>
+  </div>
 </div>
 
 <script>
@@ -121,14 +125,22 @@ function resizeGame() {
   const GAP = 24;
   const vw = window.innerWidth;
   const vh = window.innerHeight;
-  const availW = vw * 0.75 - SIDEBAR_W - GAP;
-  const availH = vh * 0.75;
+  const isMobile = vw <= 700;
+  let availW, availH;
+  if (isMobile) {
+    // On mobile: full width minus small padding; height minus sidebar bar (~36px), controls (~60px), padding (~12px)
+    availW = vw - 8;
+    availH = vh - 36 - 60 - 16;
+  } else {
+    availW = vw * 0.75 - SIDEBAR_W - GAP;
+    availH = vh * 0.75;
+  }
   SCALE = Math.max(1, Math.floor(Math.min(availW / W, availH / H)));
   canvas.width  = W * SCALE;
   canvas.height = H * SCALE;
   const fs = Math.max(10, Math.round(SCALE * 4.5));
-  sidebar.style.width    = SIDEBAR_W + 'px';
-  sidebar.style.fontSize = fs + 'px';
+  sidebar.style.width    = isMobile ? '100%' : SIDEBAR_W + 'px';
+  sidebar.style.fontSize = isMobile ? '12px' : fs + 'px';
   document.getElementById('s-power').style.fontSize = Math.max(9, SCALE * 3.5) + 'px';
 }
 
