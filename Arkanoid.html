@@ -3,6 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preload" as="font" href="https://fonts.gstatic.com/s/pressstart2p/v16/e3t4euO8T-267oIAQAu6jDQyK0nR.woff2" type="font/woff2" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
 <title>快打磚塊 ARKANOID</title>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -14,7 +18,7 @@
     height: 100vh;
     height: 100dvh;
     overflow: hidden;
-    font-family: 'Courier New', monospace;
+    font-family: 'Press Start 2P', 'Courier New', monospace;
   }
   #wrapper {
     position: relative;
@@ -92,6 +96,7 @@
 </style>
 </head>
 <body>
+<div style="position:absolute;visibility:hidden;font-family:'Press Start 2P';font-size:4px">.</div>
 <div id="wrapper">
   <div id="sidebar">
     <div class="label">SCORE</div>
@@ -925,7 +930,7 @@ function draw() {
     const alpha = Math.min(1, (animFrame % 60) / 30);
     ctx.globalAlpha = Math.abs(Math.sin(animFrame * 0.08));
     ctx.fillStyle = '#ff0';
-    ctx.font = 'bold 10px monospace';
+    ctx.font = '8px "Press Start 2P",monospace';
     ctx.textAlign = 'center';
     ctx.fillText(flashMsg, W/2, H/2);
     ctx.globalAlpha = 1;
@@ -937,10 +942,10 @@ function draw() {
     ctx.fillStyle = '#0008';
     ctx.fillRect(0, 0, W, H);
     ctx.fillStyle = '#ff0';
-    ctx.font = 'bold 14px monospace';
+    ctx.font = '10px "Press Start 2P",monospace';
     ctx.textAlign = 'center';
     ctx.fillText('– PAUSE –', W/2, H/2);
-    ctx.font = '9px monospace';
+    ctx.font = '7px "Press Start 2P",monospace';
     ctx.fillStyle = '#aaa';
     ctx.fillText('SPACE to resume', W/2, H/2 + 16);
   }
@@ -948,13 +953,13 @@ function draw() {
   // CLEAR overlay
   if (STATE === 'CLEAR') {
     ctx.fillStyle = '#fff';
-    ctx.font = 'bold 14px monospace';
+    ctx.font = '10px "Press Start 2P",monospace';
     ctx.textAlign = 'center';
     const a = Math.abs(Math.sin(animFrame * 0.1));
     ctx.globalAlpha = a;
     ctx.fillText('STAGE CLEAR!', W/2, H/2 - 8);
     ctx.fillStyle = '#ff0';
-    ctx.font = '10px monospace';
+    ctx.font = '7px "Press Start 2P",monospace';
     ctx.fillText(`LEVEL ${level} BONUS: ${level*500}`, W/2, H/2 + 10);
     ctx.globalAlpha = 1;
   }
@@ -963,7 +968,7 @@ function draw() {
   if (STATE === 'DEAD') {
     ctx.fillStyle = '#f44';
     ctx.globalAlpha = Math.abs(Math.sin(animFrame * 0.12));
-    ctx.font = 'bold 12px monospace';
+    ctx.font = '10px "Press Start 2P",monospace';
     ctx.textAlign = 'center';
     ctx.fillText('MISS!', W/2, H/2);
     ctx.globalAlpha = 1;
@@ -999,15 +1004,16 @@ function drawWalls() {
     ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, 16); ctx.stroke();
   }
   // Score area label
-  ctx.fillStyle = '#0cf';
-  ctx.font = '6px monospace';
-  ctx.textAlign = 'left';
-  ctx.fillText('1UP', 10, 12);
-  ctx.textAlign = 'right';
-  ctx.fillText(`HI ${hiScore}`, W - 10, 12);
-  ctx.textAlign = 'left';
+  ctx.font = '5px "Press Start 2P",monospace';
   ctx.fillStyle = '#ff0';
-  ctx.fillText(`${score}`, 18, 12);
+  ctx.textAlign = 'left';
+  ctx.fillText(`${score}`, 10, 12);
+  ctx.fillStyle = '#0cf';
+  ctx.textAlign = 'center';
+  ctx.fillText(`HI ${hiScore}`, W/2, 12);
+  ctx.fillStyle = '#0f0';
+  ctx.textAlign = 'right';
+  ctx.fillText(`LV${level}`, W - 10, 12);
 }
 
 function drawBrick(br) {
@@ -1122,7 +1128,7 @@ function drawCapsule(cap) {
   ctx.roundRect(cap.x, cap.y, cap.w, cap.h, 3);
   ctx.fill();
   ctx.fillStyle = '#fff';
-  ctx.font = 'bold 7px monospace';
+  ctx.font = '6px "Press Start 2P",monospace';
   ctx.textAlign = 'center';
   ctx.fillText(cap.type, cap.x + cap.w/2, cap.y + 7);
   ctx.shadowBlur = 0;
@@ -1160,14 +1166,14 @@ function drawTitle() {
   ctx.fillStyle = '#004080';
   ctx.fillRect(8, 20, W - 16, 20);
   ctx.fillStyle = '#0cf';
-  ctx.font = 'bold 8px monospace';
+  ctx.font = '6px "Press Start 2P",monospace';
   ctx.textAlign = 'center';
   ctx.fillText('TAITO PRESENTS', W/2, 33);
 
   // Title ARKANOID
   const t = Math.sin(titleTimer * 0.003) * 2;
-  drawGlowText('ARKANOID', W/2, 68, 'bold 22px monospace', '#0ff', '#036');
-  drawGlowText('快打磚塊', W/2, 88, 'bold 14px monospace', '#ff0', '#840');
+  drawGlowText('ARKANOID', W/2, 68, '16px "Press Start 2P",monospace', '#0ff', '#036');
+  drawGlowText('快打磚塊', W/2, 86, '10px "Press Start 2P",monospace', '#ff0', '#840');
 
   // Preview bricks — centered: 11 cols × (BRICK_W-1)=15 + last brick width 14 = 164px total
   const brickTotalW = 10 * (BRICK_W - 1) + (BRICK_W - 2); // 164
@@ -1203,19 +1209,19 @@ function drawTitle() {
   ctx.shadowBlur = 0;
 
   // Instructions
-  ctx.font = '8px monospace';
+  ctx.font = '7px "Press Start 2P",monospace';
   ctx.fillStyle = Math.floor(titleTimer / 500) % 2 === 0 ? '#ff0' : '#880';
   ctx.textAlign = 'center';
-  ctx.fillText('── PRESS SPACE TO START ──', W/2, 200);
+  ctx.fillText('PRESS SPACE TO START', W/2, 200);
 
   ctx.fillStyle = '#888';
-  ctx.font = '7px monospace';
-  ctx.fillText('← → MOVE   SPACE LAUNCH/PAUSE', W/2, 216);
-  ctx.fillText('ESC MAIN MENU', W/2, 227);
+  ctx.font = '6px "Press Start 2P",monospace';
+  ctx.fillText('← →  MOVE   SPC  LAUNCH', W/2, 216);
+  ctx.fillText('ESC  MAIN MENU', W/2, 228);
 
   // Copyright
-  ctx.fillStyle = '#444';
-  ctx.font = '6px monospace';
+  ctx.fillStyle = '#333';
+  ctx.font = '5px "Press Start 2P",monospace';
   ctx.fillText('©1986 TAITO  HTML5 RECREATION', W/2, 248);
 }
 
@@ -1231,10 +1237,10 @@ function drawGameOver() {
     ctx.beginPath(); ctx.arc(sx, sy, 1, 0, Math.PI*2); ctx.fill();
   }
 
-  drawGlowText('GAME OVER', W/2, 90, 'bold 18px monospace', '#f44', '#400');
+  drawGlowText('GAME OVER', W/2, 90, '14px "Press Start 2P",monospace', '#f44', '#400');
 
   ctx.fillStyle = '#ff0';
-  ctx.font = 'bold 9px monospace';
+  ctx.font = '7px "Press Start 2P",monospace';
   ctx.textAlign = 'center';
   ctx.fillText(`SCORE: ${score}`, W/2, 115);
   ctx.fillStyle = '#0cf';
@@ -1243,9 +1249,10 @@ function drawGameOver() {
   ctx.fillText(`LEVEL REACHED: ${level}`, W/2, 145);
 
   ctx.fillStyle = Math.floor(titleTimer / 500) % 2 === 0 ? '#ff0' : '#880';
-  ctx.font = '8px monospace';
+  ctx.font = '7px "Press Start 2P",monospace';
   ctx.fillText('PRESS SPACE TO RETRY', W/2, 175);
   ctx.fillStyle = '#666';
+  ctx.font = '6px "Press Start 2P",monospace';
   ctx.fillText('ESC for TITLE', W/2, 190);
 }
 
