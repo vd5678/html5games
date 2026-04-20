@@ -211,61 +211,43 @@
   const cv = document.getElementById('thumb-arkanoid');
   const ctx = cv.getContext('2d');
   const W = 224, H = 256;
-  // game coords: walls 8px each side, top wall 16px
-  // 13 cols × 16px = 208px, fills x=8..216 perfectly between walls
 
   ctx.fillStyle = '#000'; ctx.fillRect(0,0,W,H);
   // Walls
-  ctx.fillStyle = '#004';
-  ctx.fillRect(0,0,8,H); ctx.fillRect(W-8,0,8,H); ctx.fillRect(0,0,W,16);
-
-  // Bricks — 8 rows, some bricks knocked out to show ball path
-  // null = already broken (empty)
-  const B = null;
+  ctx.fillStyle = '#004'; ctx.fillRect(0,0,8,H); ctx.fillRect(W-8,0,8,H); ctx.fillRect(0,0,W,16);
+  // Bricks
   const rows = [
-    ['#aaa','#aaa','#aaa','#aaa','#aaa','#aaa','#aaa','#aaa','#aaa','#aaa','#aaa','#aaa','#aaa'], // silver
     ['#f33','#f33','#f33','#f33','#f33','#f33','#f33','#f33','#f33','#f33','#f33','#f33','#f33'],
     ['#f80','#f80','#f80','#f80','#f80','#f80','#f80','#f80','#f80','#f80','#f80','#f80','#f80'],
     ['#ff0','#ff0','#ff0','#ff0','#ff0','#ff0','#ff0','#ff0','#ff0','#ff0','#ff0','#ff0','#ff0'],
-    ['#0d0','#0d0','#0d0','#0d0','#0d0','#0d0',  B,   '#0d0','#0d0','#0d0','#0d0','#0d0','#0d0'],
-    ['#0ee','#0ee','#0ee','#0ee','#0ee','#0ee',  B,     B,   '#0ee','#0ee','#0ee','#0ee','#0ee'],
+    ['#0d0','#0d0','#0d0','#0d0','#0d0','#0d0','#0d0','#0d0','#0d0','#0d0','#0d0','#0d0','#0d0'],
+    ['#0ee','#0ee','#0ee','#0ee','#0ee','#0ee','#0ee','#0ee','#0ee','#0ee','#0ee','#0ee','#0ee'],
     ['#44f','#44f','#44f','#44f','#44f','#44f','#44f','#44f','#44f','#44f','#44f','#44f','#44f'],
     ['#d0d','#d0d','#d0d','#d0d','#d0d','#d0d','#d0d','#d0d','#d0d','#d0d','#d0d','#d0d','#d0d'],
   ];
   rows.forEach((row, r) => {
     row.forEach((col, c) => {
-      if (!col) return;
       const x = 8 + c*16, y = 24 + r*9;
       ctx.fillStyle = col; ctx.fillRect(x,y,15,8);
-      ctx.fillStyle = 'rgba(255,255,255,0.28)'; ctx.fillRect(x+1,y+1,13,2);
+      ctx.fillStyle = 'rgba(255,255,255,0.25)'; ctx.fillRect(x+1,y+1,13,2);
     });
   });
-
-  // Ball — positioned mid-canvas, along the gap/break path
-  const ballX = 8 + 6*16 + 8; // column 6 center = 8+96+8 = 112 = canvas center
-  const ballY = 148;
-  ctx.shadowColor='#fff'; ctx.shadowBlur=10;
+  // Ball
+  ctx.shadowColor='#fff'; ctx.shadowBlur=8;
   ctx.fillStyle='#fff';
-  ctx.beginPath(); ctx.arc(ballX, ballY, 4, 0, Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(110,150,4,0,Math.PI*2); ctx.fill();
   ctx.shadowBlur=0;
-
-  // Paddle — centered: W/2 - padW/2 = 112 - 16 = 96, width 32
-  const padW = 32, padX = W/2 - padW/2; // x=96
-  const padY = 232;
-  ctx.shadowColor='#0cf'; ctx.shadowBlur=12;
-  const g = ctx.createLinearGradient(padX, padY, padX, padY+6);
+  // Paddle
+  ctx.shadowColor='#0cf'; ctx.shadowBlur=10;
+  const g = ctx.createLinearGradient(78,232,78,238);
   g.addColorStop(0,'#acf'); g.addColorStop(1,'#036');
-  ctx.fillStyle = g;
-  ctx.beginPath(); ctx.roundRect(padX, padY, padW, 6, 3); ctx.fill();
+  ctx.fillStyle=g;
+  ctx.beginPath(); ctx.roundRect(78,232,28,6,3); ctx.fill();
   ctx.shadowBlur=0;
-
-  // Capsule — falling from break area toward paddle, centered
-  ctx.shadowColor='#0f06'; ctx.shadowBlur=6;
-  ctx.fillStyle='#0f0';
-  ctx.beginPath(); ctx.roundRect(ballX - 8, 185, 16, 8, 3); ctx.fill();
-  ctx.shadowBlur=0;
+  // Capsule
+  ctx.fillStyle='#0f0'; ctx.beginPath(); ctx.roundRect(60,170,16,8,3); ctx.fill();
   ctx.fillStyle='#fff'; ctx.font='bold 7px monospace'; ctx.textAlign='center';
-  ctx.fillText('L', ballX, 191); // Laser capsule
+  ctx.fillText('E',68,177);
 })();
 
 // ── Snake thumbnail ────────────────────────────────────
