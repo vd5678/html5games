@@ -155,6 +155,33 @@ canvas#board{ display:block; }
 }
 .gbtn:hover{ background:#003333; }
 .hi{ color:#ff0; }
+
+/* ── 手機版 HUD ── */
+#mobile-hud{
+  display:none;
+  background:#000;
+  width:100%;
+  justify-content:space-around;
+  align-items:center;
+  padding:4px 8px;
+  border-bottom:1px solid #333;
+}
+.mh-item{ display:flex; flex-direction:column; align-items:center; gap:1px; }
+.mh-l{ color:#f0a000; font-size:6px; letter-spacing:1px; }
+#mobile-hud span:not(.mh-l){ color:#fff; font-size:11px; letter-spacing:1px; }
+
+/* 手機版遊戲區（canvas + NEXT 並排）*/
+#mobile-game-area{ display:contents; }
+#mobile-next-box{
+  display:none;
+  flex-direction:column;
+  align-items:center;
+  gap:4px;
+  padding:4px 4px 0;
+  background:#000;
+}
+#mobile-next-box .mh-l{ font-size:7px; }
+#mobile-next-cv{ background:#000018; border:1px solid #333; display:block; }
 </style>
 </head>
 <body>
@@ -168,12 +195,19 @@ canvas#board{ display:block; }
 
   <!-- 中：遊戲 -->
   <div id="center">
+    <!-- 手機版 HUD 列 -->
+    <div id="mobile-hud">
+      <span class="mh-item"><span class="mh-l">SCORE</span><span id="mh-score">000000</span></span>
+      <span class="mh-item"><span class="mh-l">LV</span><span id="mh-level">00</span></span>
+      <span class="mh-item"><span class="mh-l">LINES</span><span id="mh-lines">000</span></span>
+    </div>
     <div id="topbar"><span>TETRIS</span></div>
+    <div id="mobile-game-area">
     <div id="board-wrap">
       <canvas id="board" width="200" height="400"></canvas>
       <div id="overlay">
         <h1>TETRIS</h1>
-        <div class="sub">
+        <div class="sub key-sub">
           ← → &nbsp; 移 動<br>
           ↑ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 旋 轉<br>
           ↓ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 加 速<br>
@@ -182,8 +216,14 @@ canvas#board{ display:block; }
           M &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 靜 音
         </div>
         <button class="gbtn" id="start-btn">▶ GAME START</button>
-        <div class="sub" style="font-size:6px;color:#555;margin-top:-6px">或按任意鍵開始</div>
+        <div class="sub key-sub" style="font-size:6px;color:#555;margin-top:-6px">或按任意鍵開始</div>
       </div>
+    </div>
+    <!-- 手機版 NEXT 預覽 -->
+    <div id="mobile-next-box">
+      <div class="mh-l">NEXT</div>
+      <canvas id="mobile-next-cv" width="48" height="48"></canvas>
+    </div>
     </div>
   </div>
 
@@ -605,7 +645,7 @@ function render(){
   piece.shape.forEach((row,r)=>row.forEach((v,c)=>{
     if(v)drawBlock(bCtx,(piece.x+c)*SZ,(piece.y+r)*SZ,piece.d.id,SZ);
   }));
-  // Next
+  // Next (desktop)
   nCtx.fillStyle='#000018'; nCtx.fillRect(0,0,nCv.width,nCv.height);
   const ns2=16,sh2=nxt.d.S[0];
   const nx2=Math.floor((nCv.width/ns2-sh2[0].length)/2);
@@ -613,6 +653,18 @@ function render(){
   sh2.forEach((row,r)=>row.forEach((v,c)=>{
     if(v)drawBlock(nCtx,(nx2+c)*ns2,(ny2+r)*ns2,nxt.d.id,ns2);
   }));
+  // Next (手機版)
+  const mnCv=document.getElementById('mobile-next-cv');
+  if(mnCv){
+    const mnCtx=mnCv.getContext('2d');
+    mnCtx.fillStyle='#000018'; mnCtx.fillRect(0,0,mnCv.width,mnCv.height);
+    const ms3=11,sh3=nxt.d.S[0];
+    const nx3=Math.floor((mnCv.width/ms3-sh3[0].length)/2);
+    const ny3=Math.floor((mnCv.height/ms3-sh3.length)/2);
+    sh3.forEach((row,r)=>row.forEach((v,c)=>{
+      if(v)drawBlock(mnCtx,(nx3+c)*ms3,(ny3+r)*ms3,nxt.d.id,ms3);
+    }));
+  }
 }
 
 /* ── HUD ── */
@@ -621,6 +673,13 @@ function updateHUD(){
   document.getElementById('v-score').textContent=pad(score,6);
   document.getElementById('v-lines').textContent=pad(lines,3);
   document.getElementById('v-level').textContent=pad(level,2);
+  // 手機版 HUD
+  const ms=document.getElementById('mh-score');
+  const ml=document.getElementById('mh-level');
+  const mn=document.getElementById('mh-lines');
+  if(ms) ms.textContent=pad(score,6);
+  if(ml) ml.textContent=pad(level,2);
+  if(mn) mn.textContent=pad(lines,3);
 }
 
 /* ── 統計面板 ── */
@@ -727,7 +786,7 @@ function endGame(){
     <div class="sub">SCORE<br><span class="hi" style="font-size:16px">${pad(score,6)}</span></div>
     <div class="sub">LEVEL ${pad(level,2)} &nbsp; LINES ${pad(lines,3)}</div>
     <button class="gbtn" id="start-btn">▶ PLAY AGAIN</button>
-    <div class="sub" style="font-size:6px;color:#555;margin-top:-6px">或按任意鍵重新開始</div>
+    <div class="sub key-sub" style="font-size:6px;color:#555;margin-top:-6px">或按任意鍵重新開始</div>
   `;
   ov.style.display='flex';
   document.getElementById('start-btn').addEventListener('click',startGame);
@@ -741,7 +800,7 @@ function togglePause(){
     const ov=document.getElementById('overlay');
     ov.innerHTML=`
       <h1 style="font-size:16px;color:#0ff;letter-spacing:6px">PAUSE</h1>
-      <div class="sub" style="margin-top:4px">P 或任意鍵 &nbsp; 繼續<br>ESC &nbsp; 回主選單</div>
+      <div class="sub key-sub" style="margin-top:4px">P 或任意鍵 &nbsp; 繼續<br>ESC &nbsp; 回主選單</div>
     `;
     ov.style.display='flex';
   }else{
@@ -784,7 +843,7 @@ document.addEventListener('keydown',e=>{
     const ov=document.getElementById('overlay');
     ov.innerHTML=`
       <h1>TETRIS</h1>
-      <div class="sub">
+      <div class="sub key-sub">
         ← → &nbsp; 移 動<br>
         ↑ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 旋 轉<br>
         ↓ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 加 速<br>
@@ -793,7 +852,7 @@ document.addEventListener('keydown',e=>{
         M &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 靜 音
       </div>
       <button class="gbtn" id="start-btn">▶ GAME START</button>
-      <div class="sub" style="font-size:6px;color:#555;margin-top:-6px">或按任意鍵開始</div>
+      <div class="sub key-sub" style="font-size:6px;color:#555;margin-top:-6px">或按任意鍵開始</div>
     `;
     ov.style.display='flex';
     document.getElementById('start-btn').addEventListener('click',startGame);
@@ -841,17 +900,16 @@ document.addEventListener('keydown',e=>{
 /* ── Mobile resize ─────────────────────────────────── */
 function resizeGame(){
   if(window.innerWidth>700)return;
-  // Hide side panels already handled by CSS.
-  // Available area: full width, height minus topbar(32) + controls(~170) + padding(~12)
+  const NEXT_W=58; // mobile-next-box
+  const HUD_H=30;  // mobile-hud
   const vw=window.innerWidth;
   const vh=window.innerHeight;
-  const availW=vw-4;            // 2px padding each side
-  const availH=vh-32-170-12;   // topbar + controls + padding
+  const availW=vw-NEXT_W-4;
+  const availH=vh-HUD_H-170-12;
   const newSZ=Math.max(14,Math.floor(Math.min(availW/COLS, availH/ROWS)));
   if(newSZ===SZ)return;
   SZ=newSZ;
   bCv.width=COLS*SZ; bCv.height=ROWS*SZ;
-  // Redraw
   bCtx.fillStyle='#000012'; bCtx.fillRect(0,0,bCv.width,bCv.height);
   if(typeof render==='function'&&board) render();
 }
@@ -906,8 +964,12 @@ setTimeout(resizeGame,0);
       }
       #left-panel,#right-panel{display:none;}
       #center{width:100%;}
-      #topbar{border-left:none;border-right:none;}
-      #board-wrap{border-left:none;border-right:none;border-bottom:none;}
+      #topbar{display:none;}
+      #mobile-hud{display:flex;}
+      #mobile-game-area{display:flex;flex-direction:row;align-items:flex-start;width:100%;}
+      #board-wrap{border-left:none;border-right:none;border-bottom:none;flex:0 0 auto;}
+      #mobile-next-box{display:flex;flex:0 0 56px;}
+      .key-sub{display:none;}
       #tet-mobile{display:flex;}
     }
   `;
