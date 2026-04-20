@@ -30,6 +30,36 @@
       padding: 7px 6px; line-height: 2;
       border-radius: 0 0 4px 4px;
     }
+    /* Mobile controls */
+    #mobile-controls {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      margin-top: 10px;
+    }
+    .mob-row { display: flex; gap: 6px; }
+    .mBtn {
+      background: #1a2a00;
+      border: 2px solid #6a8c00;
+      color: #9BBC0F;
+      font-size: 20px;
+      width: 64px; height: 56px;
+      border-radius: 8px;
+      cursor: pointer;
+      user-select: none;
+      -webkit-user-select: none;
+      touch-action: manipulation;
+    }
+    .mBtn:active { background: #2a4a00; }
+    #mbtn-action {
+      width: 136px;
+      font-size: 13px;
+    }
+    @media (max-width: 600px) {
+      #mobile-controls { display: flex; }
+      #hint { font-size: 9px; }
+    }
   </style>
 </head>
 <body>
@@ -43,6 +73,15 @@
   <canvas id="canvas" width="280" height="280"></canvas>
 </div>
 <div id="hint">ARROW KEYS &mdash; move<br>ENTER / SPACE &mdash; start &amp; pause<br>P &mdash; pause</div>
+<div id="mobile-controls">
+  <div class="mob-row"><button class="mBtn" id="mbtn-up">▲</button></div>
+  <div class="mob-row">
+    <button class="mBtn" id="mbtn-left">◀</button>
+    <button class="mBtn" id="mbtn-down">▼</button>
+    <button class="mBtn" id="mbtn-right">▶</button>
+  </div>
+  <div class="mob-row"><button class="mBtn" id="mbtn-action">START / PAUSE</button></div>
+</div>
 
 <script>
 const canvas = document.getElementById('canvas');
@@ -288,6 +327,46 @@ document.addEventListener('keydown',e=>{
 
 // Start idle loop immediately
 idleLoop();
+
+// ── Mobile touch controls ──────────────────────────────
+function mobileAction(){
+  unlockAudio();
+  if(gameState==='start'||gameState==='dead') startGame();
+  else if(gameState==='running') paused=!paused;
+}
+function mbtnDir(dx,dy){
+  unlockAudio();
+  if(gameState==='running'&&!paused) inputDir={x:dx,y:dy};
+  else mobileAction();
+}
+function setupMob(id,fn){
+  const el=document.getElementById(id);
+  if(!el)return;
+  el.addEventListener('touchstart',e=>{fn();e.preventDefault();},{passive:false});
+  el.addEventListener('mousedown',fn);
+}
+setupMob('mbtn-up',    ()=>mbtnDir(0,-1));
+setupMob('mbtn-down',  ()=>mbtnDir(0,1));
+setupMob('mbtn-left',  ()=>mbtnDir(-1,0));
+setupMob('mbtn-right', ()=>mbtnDir(1,0));
+setupMob('mbtn-action',mobileAction);
+
+// Swipe on canvas
+let _tx=null,_ty=null;
+canvas.addEventListener('touchstart',e=>{_tx=e.touches[0].clientX;_ty=e.touches[0].clientY;e.preventDefault();},{passive:false});
+canvas.addEventListener('touchend',e=>{
+  if(_tx===null)return;
+  const dx=e.changedTouches[0].clientX-_tx;
+  const dy=e.changedTouches[0].clientY-_ty;
+  const ax=Math.abs(dx),ay=Math.abs(dy);
+  if(ax<10&&ay<10){mobileAction();_tx=null;return;}
+  unlockAudio();
+  if(gameState==='running'&&!paused){
+    if(ax>ay) inputDir={x:dx>0?1:-1,y:0};
+    else       inputDir={x:0,y:dy>0?1:-1};
+  }
+  _tx=null;
+},{passive:false});
 </script>
 </body>
 </html>

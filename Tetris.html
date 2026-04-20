@@ -781,6 +781,114 @@ document.addEventListener('keydown',e=>{
   }
 });
 
+/* ── Mobile touch controls ── */
+(function(){
+  const css=document.createElement('style');
+  css.textContent=`
+    #tet-mobile{
+      display:none;
+      flex-direction:column;
+      align-items:center;
+      gap:6px;
+      padding:8px 0 4px;
+      background:#000;
+    }
+    .tmrow{display:flex;gap:6px;}
+    .tBtn{
+      background:#0a0a1a;
+      border:2px solid #444;
+      color:#fff;
+      font-size:18px;
+      width:64px;height:52px;
+      border-radius:8px;
+      cursor:pointer;
+      user-select:none;
+      -webkit-user-select:none;
+      touch-action:manipulation;
+    }
+    .tBtn:active{background:#223;}
+    #tBtn-drop{width:136px;font-size:13px;color:#ff0;border-color:#ff0;}
+    #tBtn-pause{width:84px;font-size:11px;color:#0cf;border-color:#0cf;}
+    @media(max-width:700px){
+      #tet-mobile{display:flex;}
+      body{align-items:flex-start;padding-top:6px;}
+    }
+  `;
+  document.head.appendChild(css);
+
+  const div=document.createElement('div');
+  div.id='tet-mobile';
+  div.innerHTML=`
+    <div class="tmrow">
+      <button class="tBtn" id="tBtn-rotL">↺</button>
+      <button class="tBtn" id="tBtn-up">▲ ROT</button>
+      <button class="tBtn" id="tBtn-rotR">↻</button>
+    </div>
+    <div class="tmrow">
+      <button class="tBtn" id="tBtn-left">◀</button>
+      <button class="tBtn" id="tBtn-down">▼</button>
+      <button class="tBtn" id="tBtn-right">▶</button>
+    </div>
+    <div class="tmrow">
+      <button class="tBtn" id="tBtn-drop">HARD DROP ▼▼</button>
+      <button class="tBtn" id="tBtn-pause">PAUSE</button>
+    </div>
+  `;
+  document.body.appendChild(div);
+
+  function fire(keyName,type='keydown'){
+    const e=new KeyboardEvent(type,{key:keyName,bubbles:true,cancelable:true});
+    document.dispatchEvent(e);
+  }
+  function hold(id,key){
+    const el=document.getElementById(id);
+    if(!el)return;
+    let iv=null;
+    function dn(e){
+      fire(key,'keydown'); e.preventDefault();
+      iv=setInterval(()=>fire(key,'keydown'),80);
+    }
+    function up(e){ clearInterval(iv); iv=null; fire(key,'keyup'); e.preventDefault(); }
+    el.addEventListener('touchstart',dn,{passive:false});
+    el.addEventListener('touchend',up,{passive:false});
+    el.addEventListener('mousedown',dn);
+    el.addEventListener('mouseup',up);
+  }
+  function tap(id,key){
+    const el=document.getElementById(id);
+    if(!el)return;
+    function dn(e){ fire(key,'keydown'); e.preventDefault(); }
+    el.addEventListener('touchstart',dn,{passive:false});
+    el.addEventListener('mousedown',dn);
+  }
+  hold('tBtn-left','ArrowLeft');
+  hold('tBtn-right','ArrowRight');
+  hold('tBtn-down','ArrowDown');
+  tap('tBtn-up','ArrowUp');
+  tap('tBtn-rotL','z');
+  tap('tBtn-rotR','ArrowUp');
+  tap('tBtn-drop',' ');
+  tap('tBtn-pause','p');
+
+  // Swipe on game canvas
+  let sx=null,sy=null;
+  const gcv=document.getElementById('board');
+  if(gcv){
+    gcv.addEventListener('touchstart',e=>{sx=e.touches[0].clientX;sy=e.touches[0].clientY;e.preventDefault();},{passive:false});
+    gcv.addEventListener('touchend',e=>{
+      if(sx===null)return;
+      const dx=e.changedTouches[0].clientX-sx;
+      const dy=e.changedTouches[0].clientY-sy;
+      const ax=Math.abs(dx),ay=Math.abs(dy);
+      if(ax<12&&ay<12){fire('ArrowUp');sx=null;return;}
+      if(ax>ay){ fire(dx>0?'ArrowRight':'ArrowLeft'); }
+      else if(dy>0){ fire('ArrowDown'); }
+      else { fire('ArrowUp'); }
+      sx=null;
+    },{passive:false});
+  }
+})();
+
 document.addEventListener('keyup',e=>{
   keys[e.key]=false;
   if(e.key==='ArrowLeft'||e.key==='ArrowRight'){

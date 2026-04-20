@@ -39,6 +39,40 @@
   }
   #sidebar .label { color: #aaa; }
   #sidebar .value { color: #ff0; font-weight: bold; }
+
+  /* ── Mobile Layout ── */
+  #mobile-controls {
+    display: none;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
+    margin-top: 10px;
+    width: 100%;
+  }
+  .mBtn {
+    background: #1a1a2e;
+    border: 2px solid #0cf;
+    color: #0cf;
+    font-size: 22px;
+    padding: 14px 28px;
+    border-radius: 10px;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: manipulation;
+    cursor: pointer;
+    box-shadow: 0 0 10px #0cf6;
+  }
+  .mBtn:active { background: #0cf3; }
+  #btn-fire  { font-size: 16px; padding: 14px 20px; border-color: #ff0; color: #ff0; box-shadow: 0 0 10px #ff06; }
+  #btn-menu  { font-size: 13px; padding: 10px 16px; border-color: #f44; color: #f44; box-shadow: 0 0 8px #f446; }
+
+  @media (max-width: 700px) {
+    body { align-items: flex-start; padding-top: 8px; }
+    #wrapper { flex-direction: column; align-items: center; gap: 8px; }
+    #sidebar { display: flex; flex-wrap: wrap; gap: 0 18px; width: 100%; justify-content: center; font-size: 13px !important; }
+    #sidebar br { display: none; }
+    #mobile-controls { display: flex; }
+  }
 </style>
 </head>
 <body>
@@ -62,6 +96,12 @@
     <br>
     <div id="s-power" style="color:#0f0;font-size:11px;"></div>
   </div>
+</div>
+<div id="mobile-controls">
+  <button class="mBtn" id="btn-left">◀</button>
+  <button class="mBtn" id="btn-fire">FIRE / PAUSE</button>
+  <button class="mBtn" id="btn-right">▶</button>
+  <button class="mBtn" id="btn-menu">ESC</button>
 </div>
 
 <script>
@@ -683,6 +723,63 @@ document.addEventListener('keydown', e => {
 });
 
 document.addEventListener('keyup', e => { keys[e.code] = false; });
+
+// ─── Touch / Mobile Controls ─────────────────────────────
+let touchStartX = null;
+
+canvas.addEventListener('touchstart', e => {
+  if (AC.state === 'suspended') AC.resume();
+  touchStartX = e.touches[0].clientX;
+  e.preventDefault();
+}, { passive: false });
+
+canvas.addEventListener('touchmove', e => {
+  if (touchStartX === null || STATE !== 'PLAYING') return;
+  const dx = (e.touches[0].clientX - touchStartX) / SCALE;
+  pad.x = Math.max(8, Math.min(W - 8 - pad.w, pad.x + dx));
+  touchStartX = e.touches[0].clientX;
+  e.preventDefault();
+}, { passive: false });
+
+canvas.addEventListener('touchend', e => {
+  // Tap (no drag) = launch or pause
+  touchStartX = null;
+}, { passive: false });
+
+function setupMobileBtn(id, downFn, upFn) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.addEventListener('touchstart', e => { if (AC.state === 'suspended') AC.resume(); downFn && downFn(); e.preventDefault(); }, { passive: false });
+  el.addEventListener('touchend',   e => { upFn && upFn(); e.preventDefault(); }, { passive: false });
+  el.addEventListener('mousedown',  e => { downFn && downFn(); });
+  el.addEventListener('mouseup',    e => { upFn && upFn(); });
+}
+
+setupMobileBtn('btn-left',
+  () => { keys['ArrowLeft'] = true; },
+  () => { keys['ArrowLeft'] = false; }
+);
+setupMobileBtn('btn-right',
+  () => { keys['ArrowRight'] = true; },
+  () => { keys['ArrowRight'] = false; }
+);
+setupMobileBtn('btn-fire', () => {
+  if (AC.state === 'suspended') AC.resume();
+  if (STATE === 'TITLE' || STATE === 'GAMEOVER') { startGame(); return; }
+  if (STATE === 'PLAYING') {
+    const stuck = balls.find(b => b.stuck);
+    if (stuck) { stuck.stuck = false; stuck.vx = 1.5; stuck.vy = -2.5; }
+    else { STATE = 'PAUSED'; }
+  } else if (STATE === 'PAUSED') { STATE = 'PLAYING'; }
+});
+setupMobileBtn('btn-menu', () => {
+  if (STATE !== 'TITLE') {
+    STATE = 'TITLE'; titleTimer = 0;
+    score = 0; level = 1; lives = 3;
+    updateHUD();
+    document.getElementById('s-power').textContent = '';
+  }
+});
 
 function processInput(dt) {
   if (STATE !== 'PLAYING' && STATE !== 'PAUSED') return;
