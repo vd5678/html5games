@@ -277,11 +277,10 @@
   for(let x=0;x<COLS;x++) for(let y=0;y<ROWS;y++)
     ctx.fillRect(OX+x*CELL+CELL/2, OY+y*CELL+CELL/2, 1.5, 1.5);
 
-  // Snake body – clear S-shape
+  // Snake body – short L-shape
   const body=[
-    {x:9,y:3},{x:8,y:3},{x:7,y:3},{x:6,y:3},{x:5,y:3},{x:4,y:3},
-    {x:4,y:4},{x:5,y:4},{x:6,y:4},{x:7,y:4},{x:8,y:4},{x:9,y:4},
-    {x:9,y:5},{x:8,y:5},{x:7,y:5},{x:6,y:5},{x:5,y:5},
+    {x:8,y:4},{x:7,y:4},{x:6,y:4},{x:5,y:4},
+    {x:5,y:5},{x:5,y:6},{x:5,y:7},
   ];
   body.forEach((s,i)=>{
     const bx=OX+s.x*CELL, by=OY+s.y*CELL;
@@ -350,33 +349,33 @@
   // Use 6-digit hex so col+'ee'/'77' produces valid 8-digit RGBA
   const C='#00ffff',O='#ffff00',T='#dd00ff',S='#00ff00',Z='#ff0000',J='#0000ff',L='#ff8800';
   const board=[
-    [0,0,0,0,0,0,0,0,0,0],  // row 0  (active piece space)
+    [0,0,0,0,0,0,0,0,0,0],  // row 0
     [0,0,0,0,0,0,0,0,0,0],  // row 1
     [0,0,0,0,0,0,0,0,0,0],  // row 2
-    [J,J,0,Z,Z,T,T,T,S,S],  // row 3
-    [J,0,Z,Z,T,0,0,S,S,O],  // row 4
-    [L,L,L,C,C,C,C,0,O,O],  // row 5
-    [0,L,O,O,S,S,J,0,0,O],  // row 6
-    [Z,0,O,O,S,Z,Z,J,J,0],  // row 7
-    [Z,Z,T,T,T,0,Z,0,J,L],  // row 8
-    [0,Z,0,T,O,O,L,L,L,L],  // row 9
-    [C,C,C,C,O,O,0,S,S,0],  // row 10
-    [J,J,0,Z,Z,S,S,T,T,T],  // row 11
-    [J,L,L,Z,0,Z,S,0,T,L],  // row 12
-    [J,L,O,O,C,C,C,C,T,L],  // row 13
-    [L,L,O,O,Z,Z,S,S,T,T],  // row 14
+    [0,0,0,0,0,0,0,0,0,0],  // row 3
+    [0,0,0,0,0,0,0,0,0,0],  // row 4
+    [0,0,0,0,0,0,0,0,0,0],  // row 5
+    [0,0,0,0,0,0,0,0,0,0],  // row 6
+    [0,0,0,0,0,0,0,0,0,0],  // row 7
+    [0,0,0,0,0,0,0,0,0,0],  // row 8
+    [0,J,J,0,Z,Z,0,S,S,0],  // row 9
+    [J,J,0,Z,Z,T,S,S,0,O],  // row 10
+    [L,L,L,C,C,T,T,0,O,O],  // row 11
+    [0,L,O,O,C,T,Z,Z,O,0],  // row 12
+    [J,L,O,C,C,Z,Z,S,S,T],  // row 13
+    [J,J,O,O,C,L,L,S,T,T],  // row 14
   ];
   board.forEach((row,r)=>row.forEach((col,c)=>{ if(col) drawCell(c,r,col); }));
 
-  // Active T-piece falling (row 0–1, centered)
+  // Active T-piece falling (row 6–7, centered)
   [[0,T,0],[T,T,T]].forEach((row,r)=>row.forEach((col,c)=>{
-    if(col) drawCell(c+3, r, col);
+    if(col) drawCell(c+3, r+6, col);
   }));
 
-  // Ghost piece (faint)
+  // Ghost piece (faint) at landing spot
   ctx.globalAlpha=0.22;
   [[0,T,0],[T,T,T]].forEach((row,r)=>row.forEach((col,c)=>{
-    if(col) drawCell(c+3, r+2, col);
+    if(col) drawCell(c+3, r+7, col);
   }));
   ctx.globalAlpha=1;
 
