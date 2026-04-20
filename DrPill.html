@@ -1,0 +1,894 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no, maximum-scale=1">
+<title>DR. PILL – Virus Buster</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+html, body {
+  width:100%; height:100dvh;
+  background:#000;
+  display:flex; flex-direction:column;
+  align-items:center; justify-content:center;
+  overflow:hidden;
+  font-family:'Courier New', monospace;
+  touch-action:none;
+}
+canvas { display:block; image-rendering:pixelated; image-rendering:crisp-edges; }
+
+/* ── Mobile controls ── */
+#mobile-controls {
+  display:none;
+  flex-direction:column;
+  align-items:center;
+  gap:8px;
+  margin-top:8px;
+}
+.mrow { display:flex; gap:10px; align-items:center; }
+.mbtn {
+  background:#1a1a2e;
+  border:2px solid #0cf;
+  color:#0cf;
+  font-size:18px;
+  padding:10px 18px;
+  border-radius:8px;
+  user-select:none;
+  -webkit-user-select:none;
+  touch-action:manipulation;
+  cursor:pointer;
+  min-width:52px;
+  text-align:center;
+}
+.mbtn:active { background:#0cf3; }
+#mbtn-rotl { border-color:#ff0; color:#ff0; }
+#mbtn-rotr { border-color:#ff0; color:#ff0; }
+#mbtn-drop { border-color:#f44; color:#f44; font-size:13px; padding:10px 14px; }
+#mbtn-pause { border-color:#888; color:#888; font-size:11px; padding:8px 12px; }
+@media (max-width:700px) {
+  body { justify-content:flex-start; padding-top:4px; }
+  #mobile-controls { display:flex; }
+}
+</style>
+</head>
+<body>
+<canvas id="game"></canvas>
+<div id="mobile-controls">
+  <div class="mrow">
+    <button class="mbtn" id="mbtn-rotl">↺</button>
+    <button class="mbtn" id="mbtn-left">◀</button>
+    <button class="mbtn" id="mbtn-down">▼</button>
+    <button class="mbtn" id="mbtn-right">▶</button>
+    <button class="mbtn" id="mbtn-rotr">↻</button>
+  </div>
+  <div class="mrow">
+    <button class="mbtn" id="mbtn-drop">HARD DROP</button>
+    <button class="mbtn" id="mbtn-pause">⏸</button>
+  </div>
+</div>
+
+<script>
+/************************************************************
+ * DR. PILL – Virus Buster
+ * HTML5 Canvas Puzzle Game
+ * Original artwork, mechanics, and music – not a reproduction
+ * Falling-capsule virus-elimination gameplay (8×16 bottle)
+ ************************************************************/
+const canvas = document.getElementById('game');
+const ctx = canvas.getContext('2d');
+
+// ── Dimensions ───────────────────────────────────────────
+const COLS = 8, ROWS = 16;
+let CELL = 16;          // pixel size of one grid cell
+let CW, CH;             // canvas width/height
+let BX, BY;             // bottle inner top-left (pixel coords)
+let SIDEBAR_X;          // x start of sidebar
+const SIDEBAR_W = 64;
+const WALL = 8;         // bottle wall thickness
+const BOT_PAD = 12;
+
+// ── Colors ───────────────────────────────────────────────
+const RED = 0, YEL = 1, BLU = 2;
+const FILL  = ['#cc2020','#c8a800','#1845c8'];
+const LITE  = ['#f07070','#f0e060','#6090f8'];
+const DARK  = ['#700808','#705800','#0c2070'];
+const NAMES = ['RED','YELLOW','BLUE'];
+
+// ── State ────────────────────────────────────────────────
+let STATE = 'TITLE'; // TITLE | OPENING | PLAYING | PAUSE | LEVELCLEAR | GAMEOVER
+let gameLevel = 1;   // selected on title / current in game
+let score = 0, hiScore = 0;
+let virusLeft = 0;
+let board = [];      // ROWS×COLS: null | { type:'virus'|'cap', color:0-2, paired:[r,c]|null }
+let cap = null;      // { r, c, colors:[c0,c1], orient:0(H)|1(V) }
+let nextCap = null;
+let fallTimer = 0, fallInterval = 600;
+let clearing = false, clearFlash = 0;
+let clearCells = [];
+let titleTimer = 0, openTimer = 0, goTimer = 0, lcTimer = 0;
+let lastTS = 0;
+let musicOn = true;
+
+// ── Audio ────────────────────────────────────────────────
+const AC = new (window.AudioContext || window.webkitAudioContext)();
+
+function tone(freq, t0, dur, type='square', vol=0.12) {
+  const o = AC.createOscillator(), g = AC.createGain();
+  o.connect(g); g.connect(AC.destination);
+  o.type = type; o.frequency.value = freq;
+  g.gain.setValueAtTime(0, t0);
+  g.gain.setValueAtTime(vol, t0 + 0.008);
+  g.gain.setValueAtTime(vol, t0 + dur - 0.015);
+  g.gain.linearRampToValueAtTime(0, t0 + dur);
+  o.start(t0); o.stop(t0 + dur);
+}
+
+// ── Original composed melodies ────────────────────────────
+// BOUNCE theme – upbeat, original composition
+const F = {
+  C4:261.6,D4:293.7,E4:329.6,F4:349.2,G4:392.0,A4:440.0,B4:493.9,
+  C5:523.3,D5:587.3,E5:659.3,F5:698.5,G5:784.0,A5:880.0,
+  Cs4:277.2,Ds4:311.1,Fs4:370.0,Gs4:415.3,As4:466.2,
+  Cs5:554.4,Ds5:622.3,Fs5:740.0,Gs5:830.6, As5:932.3,
+};
+
+// Original "BOUNCE" melody
+const MELODY_A = [
+  [F.G5,0.1],[F.E5,0.1],[F.C5,0.1],[F.E5,0.1],
+  [F.G5,0.2],[F.A5,0.1],[F.G5,0.1],
+  [F.F5,0.1],[F.D5,0.1],[F.B4,0.1],[F.D5,0.1],
+  [F.F5,0.2],[F.G5,0.1],[F.F5,0.1],
+  [F.E5,0.1],[F.Cs5,0.1],[F.A4,0.1],[F.Cs5,0.1],
+  [F.E5,0.2],[F.Fs5,0.1],[F.E5,0.1],
+  [F.D5,0.15],[F.C5,0.15],[F.B4,0.1],[F.A4,0.1],
+  [F.G4,0.4],
+];
+// Original "DRIFT" melody – slower, moodier
+const MELODY_B = [
+  [F.C5,0.3],[F.B4,0.15],[F.G4,0.15],
+  [F.A4,0.3],[F.G4,0.15],[F.E4,0.15],
+  [F.F4,0.3],[F.E4,0.15],[F.C4,0.15],
+  [F.D4,0.45],
+  [F.E4,0.3],[F.D4,0.15],[F.C4,0.15],
+  [F.G4,0.3],[F.F4,0.15],[F.E4,0.15],
+  [F.A4,0.3],[F.G4,0.15],[F.F4,0.15],
+  [F.E4,0.45],
+];
+
+let musicHandle = null;
+function playMelody(mel) {
+  if (!musicOn || AC.state === 'suspended') return;
+  stopMusic();
+  let t = AC.currentTime + 0.05;
+  for (const [freq, dur] of mel) { tone(freq, t, dur * 0.82); t += dur; }
+  const total = mel.reduce((s,[,d])=>s+d,0);
+  musicHandle = setTimeout(()=>playMelody(mel), total*1000);
+}
+function stopMusic() { clearTimeout(musicHandle); musicHandle = null; }
+
+function sndRotate() { tone(F.B5||987.8, AC.currentTime, 0.04, 'square', 0.1); }
+function sndMove()   { tone(F.G4, AC.currentTime, 0.035, 'square', 0.07); }
+function sndLand()   { tone(F.C4, AC.currentTime, 0.07, 'triangle', 0.18); }
+function sndClear()  {
+  [F.C5,F.E5,F.G5,F.C5*2].forEach((f,i)=>
+    setTimeout(()=>tone(f,AC.currentTime,0.09,'square',0.15), i*65));
+}
+function sndLevelClear() {
+  [F.C5,F.E5,F.G5,F.A5,F.G5,F.E5,F.C5*2].forEach((f,i)=>
+    setTimeout(()=>tone(f,AC.currentTime,0.1,'square',0.18), i*90));
+}
+function sndGameOver() {
+  [F.G4,F.E4,F.C4,F.A4*0.5||110].forEach((f,i)=>
+    setTimeout(()=>tone(f,AC.currentTime,0.22,'sawtooth',0.2), i*180));
+}
+function sndStart() {
+  [F.C4,F.E4,F.G4,F.C5].forEach((f,i)=>
+    setTimeout(()=>tone(f,AC.currentTime,0.1,'square',0.18), i*80));
+}
+
+// ── Layout ───────────────────────────────────────────────
+function computeLayout() {
+  const vw = window.innerWidth, vh = window.innerHeight;
+  const isMobile = vw <= 700;
+  const mctrl = document.getElementById('mobile-controls');
+  const mctrlH = isMobile ? (mctrl.offsetHeight > 0 ? mctrl.offsetHeight : 90) : 0;
+  const availH = vh - (isMobile ? 8 : 16) - mctrlH;
+  const availW = vw - (isMobile ? 4 : SIDEBAR_W + 24);
+
+  CELL = isMobile
+    ? Math.max(10, Math.min(availH / (ROWS + 2), availW / COLS))
+    : Math.max(12, Math.min(24, Math.floor(availH / (ROWS + 2)), Math.floor((availW) / (COLS + 5))));
+
+  const bottleW = COLS * CELL + WALL * 2;
+  const bottleH = ROWS * CELL + WALL + BOT_PAD;
+
+  BX = WALL;
+  BY = WALL;
+  SIDEBAR_X = bottleW + 6;
+  CW = isMobile ? bottleW : bottleW + SIDEBAR_W + 6;
+  CH = bottleH + 16;
+
+  canvas.width  = CW;
+  canvas.height = CH;
+  canvas.style.width  = CW + 'px';
+  canvas.style.height = CH + 'px';
+}
+
+// ── Board helpers ─────────────────────────────────────────
+function emptyBoard() {
+  board = Array.from({length: ROWS}, () => Array(COLS).fill(null));
+}
+
+function virusCountForLevel(lv) {
+  return Math.min(84, 4 + (lv - 1) * 4);
+}
+
+function placeViruses(lv) {
+  const count = virusCountForLevel(lv);
+  let placed = 0, tries = 0;
+  while (placed < count && tries < 5000) {
+    tries++;
+    const c = Math.floor(Math.random() * COLS);
+    const r = 4 + Math.floor(Math.random() * (ROWS - 4));
+    if (board[r][c]) continue;
+    const color = Math.floor(Math.random() * 3);
+    // Don't create instant 3-in-a-row
+    const h2 = c >= 2 && board[r][c-1]?.color === color && board[r][c-2]?.color === color;
+    const v2 = r >= 2 && board[r-1][c]?.color === color && board[r-2][c]?.color === color;
+    if (h2 || v2) continue;
+    board[r][c] = { type:'virus', color, paired:null };
+    placed++;
+  }
+  virusLeft = placed;
+}
+
+// ── Capsule ───────────────────────────────────────────────
+function capCells(p) {
+  if (p.orient === 0) return [[p.r, p.c], [p.r, p.c+1]];
+  return [[p.r, p.c], [p.r+1, p.c]];
+}
+
+function canPlace(p) {
+  for (const [r,c] of capCells(p)) {
+    if (r < 0 || r >= ROWS || c < 0 || c >= COLS) return false;
+    if (board[r][c]) return false;
+  }
+  return true;
+}
+
+function makeNextCap() {
+  return { colors:[Math.floor(Math.random()*3), Math.floor(Math.random()*3)], orient:0 };
+}
+
+function spawnCap() {
+  cap = { r:0, c:3, colors:[...nextCap.colors], orient:nextCap.orient };
+  nextCap = makeNextCap();
+  fallTimer = 0;
+  if (!canPlace(cap)) {
+    cap = null;
+    triggerGameOver();
+  }
+}
+
+function moveCap(dr, dc) {
+  if (!cap) return false;
+  const moved = {...cap, r:cap.r+dr, c:cap.c+dc};
+  if (canPlace(moved)) { cap = moved; if (dc!==0) sndMove(); return true; }
+  return false;
+}
+
+function rotateCap(dir) { // dir: 1=CW, -1=CCW
+  if (!cap) return;
+  let nc;
+  if (cap.orient === 0) {
+    // H→V: top=colors[0], bottom=colors[1]
+    nc = {...cap, orient:1};
+    if (dir === -1) nc.colors = [cap.colors[1], cap.colors[0]];
+    if (!canPlace(nc)) {
+      const kick = {...nc, c:nc.c-1};
+      if (canPlace(kick)) nc = kick; else return;
+    }
+  } else {
+    // V→H: left=colors[0], right=colors[1]
+    nc = {...cap, orient:0};
+    if (dir === -1) nc.colors = [cap.colors[1], cap.colors[0]];
+    if (!canPlace(nc)) return;
+  }
+  cap = nc;
+  sndRotate();
+}
+
+function hardDrop() {
+  if (!cap || clearing) return;
+  let dropped = 0;
+  while (moveCap(1,0)) { dropped++; score += 2; }
+  lockCap();
+}
+
+function lockCap() {
+  if (!cap) return;
+  const cells = capCells(cap);
+  cells.forEach(([r,c], i) => {
+    board[r][c] = { type:'cap', color:cap.colors[i], paired:cells[1-i] };
+  });
+  sndLand();
+  cap = null;
+  checkMatches();
+}
+
+// ── Match detection ───────────────────────────────────────
+function checkMatches() {
+  clearCells = [];
+  // Horizontal
+  for (let r = 0; r < ROWS; r++) {
+    let run = 1;
+    for (let c = 1; c <= COLS; c++) {
+      if (c < COLS && board[r][c] && board[r][c-1] && board[r][c].color === board[r][c-1].color) {
+        run++;
+      } else {
+        if (run >= 4) for (let k=c-run; k<c; k++) clearCells.push([r,k]);
+        run = 1;
+      }
+    }
+  }
+  // Vertical
+  for (let c = 0; c < COLS; c++) {
+    let run = 1;
+    for (let r = 1; r <= ROWS; r++) {
+      if (r < ROWS && board[r][c] && board[r-1][c] && board[r][c].color === board[r-1][c].color) {
+        run++;
+      } else {
+        if (run >= 4) for (let k=r-run; k<r; k++) clearCells.push([k,c]);
+        run = 1;
+      }
+    }
+  }
+  // Deduplicate
+  const seen = new Set();
+  clearCells = clearCells.filter(([r,c]) => { const k=r*100+c; if(seen.has(k)) return false; seen.add(k); return true; });
+
+  if (clearCells.length > 0) {
+    clearing = true;
+    clearFlash = 0;
+    sndClear();
+  } else {
+    afterClear();
+  }
+}
+
+function finishClear() {
+  let virusCleared = 0;
+  for (const [r,c] of clearCells) {
+    const cell = board[r][c];
+    if (!cell) continue;
+    if (cell.type === 'virus') virusCleared++;
+    // Orphan the paired half
+    if (cell.paired) {
+      const [pr,pc] = cell.paired;
+      if (board[pr]?.[pc]) board[pr][pc].paired = null;
+    }
+    board[r][c] = null;
+  }
+  const lineBonus = clearCells.length >= 8 ? 2 : 1;
+  score += (clearCells.length * 100 + virusCleared * 800) * lineBonus;
+  virusLeft -= virusCleared;
+  if (score > hiScore) hiScore = score;
+  clearCells = [];
+  clearing = false;
+
+  if (virusLeft <= 0) {
+    triggerLevelClear();
+    return;
+  }
+  afterClear();
+}
+
+function afterClear() {
+  // Apply gravity to orphaned cap halves
+  let fell = false;
+  for (let r = ROWS-2; r >= 0; r--) {
+    for (let c = 0; c < COLS; c++) {
+      const cell = board[r][c];
+      if (!cell || cell.type === 'virus' || cell.paired) continue;
+      // Orphaned (single) half
+      if (!board[r+1][c]) {
+        board[r+1][c] = cell;
+        board[r][c] = null;
+        fell = true;
+      }
+    }
+  }
+  if (fell) { setTimeout(checkMatches, 250); return; }
+  spawnCap();
+}
+
+// ── Game flow ─────────────────────────────────────────────
+function initLevel(lv) {
+  gameLevel = lv;
+  score = score; // carry score between levels
+  emptyBoard();
+  placeViruses(lv);
+  nextCap = makeNextCap();
+  spawnCap();
+  fallInterval = Math.max(80, 650 - (lv-1)*30);
+  STATE = 'PLAYING';
+  stopMusic();
+  playMelody(lv >= 11 ? MELODY_A : MELODY_B);
+}
+
+function startNewGame() {
+  score = 0;
+  STATE = 'OPENING';
+  openTimer = 0;
+  stopMusic();
+  sndStart();
+}
+
+function triggerGameOver() {
+  STATE = 'GAMEOVER';
+  goTimer = 0;
+  stopMusic();
+  sndGameOver();
+}
+
+function triggerLevelClear() {
+  STATE = 'LEVELCLEAR';
+  lcTimer = 0;
+  stopMusic();
+  sndLevelClear();
+}
+
+function advanceLevel() {
+  if (gameLevel >= 20) { STATE='TITLE'; gameLevel=1; return; }
+  initLevel(gameLevel + 1);
+}
+
+// ── Drawing helpers ───────────────────────────────────────
+function px(c) { return BX + c * CELL; }
+function py(r) { return BY + r * CELL; }
+
+function drawCapsuleHalf(x, y, colorIdx, alpha=1) {
+  ctx.globalAlpha = alpha;
+  ctx.fillStyle = FILL[colorIdx];
+  ctx.beginPath(); ctx.roundRect(x+1, y+1, CELL-2, CELL-2, 3); ctx.fill();
+  ctx.fillStyle = LITE[colorIdx];
+  ctx.fillRect(x+2, y+2, CELL-5, 2);
+  ctx.fillRect(x+2, y+2, 2, CELL-5);
+  ctx.globalAlpha = 1;
+}
+
+function drawVirus(x, y, colorIdx, flash=false) {
+  if (flash) {
+    ctx.fillStyle = '#fff';
+    ctx.beginPath(); ctx.ellipse(x+CELL/2, y+CELL/2, CELL/2-1, CELL/2-1, 0, 0, Math.PI*2); ctx.fill();
+    return;
+  }
+  const cx = x+CELL/2, cy = y+CELL/2;
+  ctx.fillStyle = FILL[colorIdx];
+  ctx.beginPath(); ctx.ellipse(cx, cy, CELL/2-1, CELL/2-1, 0, 0, Math.PI*2); ctx.fill();
+  // Spikey outline
+  ctx.fillStyle = DARK[colorIdx];
+  for (let a=0; a<8; a++) {
+    const ang = a * Math.PI/4;
+    ctx.beginPath();
+    ctx.arc(cx+Math.cos(ang)*(CELL/2-2), cy+Math.sin(ang)*(CELL/2-2), 1.5, 0, Math.PI*2);
+    ctx.fill();
+  }
+  // Eyes
+  ctx.fillStyle = '#fff';
+  ctx.fillRect(cx-3, cy-3, 2, 2); ctx.fillRect(cx+1, cy-3, 2, 2);
+  ctx.fillStyle = '#111';
+  ctx.fillRect(cx-2, cy-2, 1, 1); ctx.fillRect(cx+2, cy-2, 1, 1);
+  // Mouth
+  ctx.fillStyle = DARK[colorIdx];
+  ctx.fillRect(cx-2, cy+2, 4, 1);
+}
+
+function drawCapHalf(x, y, colorIdx, flash=false) {
+  if (flash) {
+    ctx.fillStyle = '#fff';
+    ctx.beginPath(); ctx.roundRect(x+1,y+1,CELL-2,CELL-2,3); ctx.fill();
+    return;
+  }
+  drawCapsuleHalf(x, y, colorIdx);
+}
+
+function drawBottle() {
+  const bw = COLS*CELL + WALL*2;
+  const bh = ROWS*CELL + WALL + BOT_PAD;
+  // Glass outer
+  const g = ctx.createLinearGradient(0, 0, bw, 0);
+  g.addColorStop(0,   '#99ccff');
+  g.addColorStop(0.08,'#1a3a66');
+  g.addColorStop(0.92,'#1a3a66');
+  g.addColorStop(1,   '#99ccff');
+  ctx.fillStyle = g;
+  ctx.beginPath(); ctx.roundRect(0, WALL-2, bw, bh, 6); ctx.fill();
+  // Inner black playfield
+  ctx.fillStyle = '#000';
+  ctx.fillRect(BX, BY, COLS*CELL, ROWS*CELL);
+  // Subtle grid
+  ctx.strokeStyle = '#0d0d22'; ctx.lineWidth = 0.5;
+  for (let c=1; c<COLS; c++) {
+    ctx.beginPath(); ctx.moveTo(BX+c*CELL, BY); ctx.lineTo(BX+c*CELL, BY+ROWS*CELL); ctx.stroke();
+  }
+  for (let r=1; r<ROWS; r++) {
+    ctx.beginPath(); ctx.moveTo(BX, BY+r*CELL); ctx.lineTo(BX+COLS*CELL, BY+r*CELL); ctx.stroke();
+  }
+  // Bottle neck
+  const nw = Math.round(COLS*CELL*0.42);
+  const nx = BX + Math.round((COLS*CELL - nw)/2);
+  ctx.fillStyle = '#1a3a66';
+  ctx.fillRect(nx-WALL, 0, nw+WALL*2, WALL);
+  ctx.fillStyle = '#99ccff'; ctx.fillRect(nx-WALL, 0, WALL, WALL);
+  ctx.fillStyle = '#99ccff'; ctx.fillRect(nx+nw, 0, WALL, WALL);
+  // Glass shine
+  ctx.fillStyle = 'rgba(255,255,255,0.12)';
+  ctx.fillRect(BX+1, BY+2, 2, ROWS*CELL-4);
+}
+
+function drawSidebar() {
+  if (CW <= COLS*CELL + WALL*2 + 10) return; // no room (mobile)
+  const sx = SIDEBAR_X + 2;
+  const mid = sx + SIDEBAR_W/2;
+
+  function label(txt, y) {
+    ctx.fillStyle='#556'; ctx.font='bold 6px monospace'; ctx.textAlign='center';
+    ctx.fillText(txt, mid, y);
+  }
+  function val(txt, y, col) {
+    ctx.fillStyle=col||'#fff'; ctx.font='bold 9px monospace'; ctx.textAlign='center';
+    ctx.fillText(txt, mid, y);
+  }
+
+  // NEXT
+  label('NEXT', BY+10);
+  if (nextCap) {
+    const nx = sx + Math.round((SIDEBAR_W - CELL*2)/2);
+    drawCapsuleHalf(nx,      BY+14, nextCap.colors[0]);
+    drawCapsuleHalf(nx+CELL, BY+14, nextCap.colors[1]);
+  }
+  label('SCORE', BY+46); val(String(score).padStart(7,'0'), BY+57, '#ff0');
+  label('BEST',  BY+72); val(String(hiScore).padStart(7,'0'), BY+83, '#0cf');
+  label('LEVEL', BY+98); val(String(gameLevel).padStart(2,'0'), BY+110, '#0f0');
+  label('VIRUS', BY+126); val(String(Math.max(0,virusLeft)).padStart(2,'0'), BY+138, '#f44');
+  label('SPEED', BY+154);
+  const spd = Math.min(10, Math.ceil(gameLevel/2));
+  val('▮'.repeat(spd) + '▯'.repeat(10-spd), BY+165, '#f80');
+}
+
+// ── Doctor pixel sprite ───────────────────────────────────
+function drawDoctor(x, y, walkPhase) {
+  const t = walkPhase;
+  // White coat
+  ctx.fillStyle='#eeeeff'; ctx.fillRect(x+1,y+10,16,18);
+  // Collar/lapels
+  ctx.fillStyle='#ccc'; ctx.fillRect(x+5,y+10,3,6); ctx.fillRect(x+10,y+10,3,6);
+  // Skin - head
+  ctx.fillStyle='#f0b080'; ctx.fillRect(x+3,y+1,12,11);
+  // Hair
+  ctx.fillStyle='#2a1a0a'; ctx.fillRect(x+3,y+1,12,4);
+  // Eyes
+  ctx.fillStyle='#111';
+  ctx.fillRect(x+5,y+6,2,2); ctx.fillRect(x+11,y+6,2,2);
+  // Glasses
+  ctx.strokeStyle='#555'; ctx.lineWidth=0.8;
+  ctx.strokeRect(x+4,y+5,4,3); ctx.strokeRect(x+10,y+5,4,3);
+  ctx.beginPath(); ctx.moveTo(x+8,y+6); ctx.lineTo(x+10,y+6); ctx.stroke();
+  // Smile
+  ctx.fillStyle='#b06040'; ctx.fillRect(x+6,y+10,6,1);
+  // Stethoscope
+  ctx.fillStyle='#888'; ctx.fillRect(x+8,y+12,1,7); ctx.fillRect(x+5,y+19,7,1);
+  ctx.beginPath(); ctx.arc(x+5,y+21,2,0,Math.PI*2);
+  ctx.fillStyle='#aaa'; ctx.fill();
+  // Arms
+  ctx.fillStyle='#eeeeff';
+  ctx.fillRect(x-1, y+11, 3, 10); // left arm
+  ctx.fillRect(x+16, y+11, 3, 10); // right arm (holding capsule)
+  // Hands
+  ctx.fillStyle='#f0b080';
+  ctx.fillRect(x-1, y+21, 3, 3);
+  ctx.fillRect(x+16, y+21, 3, 3);
+  // Capsule in right hand
+  drawCapsuleHalf(x+17, y+19, RED);
+  // Legs (walking animation)
+  ctx.fillStyle='#334';
+  ctx.fillRect(x+2,  y+28, 5, 8 + (t?2:-1));
+  ctx.fillRect(x+11, y+28, 5, 8 + (t?-1:2));
+  // Shoes
+  ctx.fillStyle='#111';
+  ctx.fillRect(x+1,  y+36+(t?2:-1), 6, 3);
+  ctx.fillRect(x+10, y+36+(t?-1:2), 6, 3);
+}
+
+// ── Screen renderers ──────────────────────────────────────
+function drawTitle() {
+  ctx.fillStyle='#000'; ctx.fillRect(0,0,CW,CH);
+
+  // Stars
+  for (let i=0;i<35;i++) {
+    const sx=((i*79+titleTimer*0.012)%CW);
+    const sy=((i*53+titleTimer*0.007*(i%3+1))%CH);
+    ctx.fillStyle=`rgba(255,255,255,${0.15+(i%5)*0.08})`;
+    ctx.beginPath(); ctx.arc(sx,sy,i%4===0?1.5:0.8,0,Math.PI*2); ctx.fill();
+  }
+
+  // Title box
+  const tx = CW/2;
+  ctx.fillStyle='#0a0a30';
+  ctx.beginPath(); ctx.roundRect(tx-70, 16, 140, 52, 6); ctx.fill();
+  ctx.strokeStyle='#0cf'; ctx.lineWidth=1.5;
+  ctx.beginPath(); ctx.roundRect(tx-70, 16, 140, 52, 6); ctx.stroke();
+
+  ctx.fillStyle='#f44'; ctx.font='bold 22px monospace'; ctx.textAlign='center';
+  ctx.shadowColor='#f44'; ctx.shadowBlur=14;
+  ctx.fillText('DR. PILL', tx, 44);
+  ctx.shadowBlur=0;
+  ctx.fillStyle='#ff0'; ctx.font='bold 9px monospace';
+  ctx.fillText('VIRUS BUSTER', tx, 60);
+
+  // Demo viruses
+  const vx = Math.round(tx-36);
+  drawVirus(vx,    76, RED);
+  drawVirus(vx+24, 76, YEL);
+  drawVirus(vx+48, 76, BLU);
+
+  // Level selector
+  ctx.font='bold 7px monospace'; ctx.fillStyle='#aaa';
+  ctx.fillText('STARTING LEVEL  ( ↑↓ TO CHANGE )', tx, 104);
+  ctx.fillStyle='#fff'; ctx.font='bold 16px monospace';
+  ctx.fillText('◀  ' + String(gameLevel).padStart(2,'0') + '  ▶', tx, 122);
+
+  // Virus count preview
+  ctx.fillStyle='#888'; ctx.font='7px monospace';
+  ctx.fillText('VIRUSES: ' + virusCountForLevel(gameLevel), tx, 134);
+
+  // Blink start
+  ctx.fillStyle = Math.floor(titleTimer/480)%2===0 ? '#ff0' : '#554400';
+  ctx.font='bold 8px monospace';
+  ctx.fillText('── PRESS SPACE TO START ──', tx, 152);
+
+  ctx.fillStyle='#444'; ctx.font='7px monospace';
+  ctx.fillText('Z/X/↑  ROTATE   ↓  FASTER   SPACE  HARD DROP', tx, 166);
+  ctx.fillText('P / ESC  PAUSE', tx, 176);
+
+  // Draw doctor on title
+  drawDoctor(Math.round(tx-9), 184, Math.floor(titleTimer/300)%2===0);
+}
+
+function drawOpening() {
+  ctx.fillStyle='#000'; ctx.fillRect(0,0,CW,CH);
+  drawBottle();
+  const t = openTimer;
+
+  // Doctor walks in from right → center
+  const targetX = Math.round(CW/2 - 9);
+  const startX = CW + 30;
+  const docX = t < 1200
+    ? Math.round(startX + (targetX - startX) * Math.min(1, t/1000))
+    : targetX;
+  drawDoctor(docX, Math.round(CH/2 - 30), Math.floor(t/200)%2===0);
+
+  // At 1.4s, throw capsule arc into bottle neck
+  if (t > 1400) {
+    const p = Math.min(1, (t-1400)/700);
+    const startCapX = docX + 18, startCapY = Math.round(CH/2 - 12);
+    const endCapX = BX + Math.round(COLS*CELL/2) - CELL;
+    const endCapY = BY - CELL;
+    const capX = Math.round(startCapX + (endCapX - startCapX)*p);
+    const capY = Math.round(startCapY + (endCapY - startCapY)*p - Math.sin(p*Math.PI)*30);
+    drawCapsuleHalf(capX, capY, RED);
+    drawCapsuleHalf(capX+CELL, capY, BLU);
+  }
+
+  // Fade to black after 2.4s → start game
+  if (t > 2300) {
+    ctx.fillStyle=`rgba(0,0,0,${Math.min(1,(t-2300)/500)})`;
+    ctx.fillRect(0,0,CW,CH);
+  }
+  if (t > 2800) initLevel(gameLevel);
+}
+
+function drawGame() {
+  ctx.fillStyle='#000'; ctx.fillRect(0,0,CW,CH);
+  drawBottle();
+
+  // Board
+  for (let r=0; r<ROWS; r++) {
+    for (let c=0; c<COLS; c++) {
+      const cell = board[r][c];
+      if (!cell) continue;
+      const isClearing = clearCells.some(([cr,cc])=>cr===r&&cc===c);
+      const flash = isClearing && Math.floor(clearFlash/5)%2===0;
+      if (cell.type==='virus') drawVirus(px(c), py(r), cell.color, flash);
+      else drawCapHalf(px(c), py(r), cell.color, flash);
+    }
+  }
+
+  // Active capsule + ghost
+  if (cap && STATE==='PLAYING') {
+    // Ghost
+    let ghost = {...cap};
+    while (canPlace({...ghost, r:ghost.r+1})) ghost.r++;
+    if (ghost.r !== cap.r) {
+      ctx.globalAlpha=0.22;
+      capCells(ghost).forEach(([r,c],i)=>drawCapsuleHalf(px(c),py(r),cap.colors[i]));
+      ctx.globalAlpha=1;
+    }
+    // Capsule
+    capCells(cap).forEach(([r,c],i)=>drawCapsuleHalf(px(c),py(r),cap.colors[i]));
+    // Connector bar between halves
+    ctx.fillStyle=FILL[cap.colors[0]];
+    if (cap.orient===0) ctx.fillRect(px(cap.c)+CELL-1, py(cap.r)+3, 2, CELL-6);
+    else                ctx.fillRect(px(cap.c)+3, py(cap.r)+CELL-1, CELL-6, 2);
+  }
+
+  drawSidebar();
+}
+
+function drawPause() {
+  ctx.fillStyle='rgba(0,0,0,0.65)'; ctx.fillRect(0,0,CW,CH);
+  ctx.fillStyle='#fff'; ctx.font='bold 14px monospace'; ctx.textAlign='center';
+  ctx.fillText('PAUSE', CW/2, CH/2-6);
+  ctx.fillStyle='#888'; ctx.font='8px monospace';
+  ctx.fillText('P / ESC to resume', CW/2, CH/2+12);
+}
+
+function drawLevelClear() {
+  ctx.fillStyle='rgba(0,0,0,0.6)'; ctx.fillRect(0,0,CW,CH);
+  ctx.fillStyle='#0f0'; ctx.font='bold 14px monospace'; ctx.textAlign='center';
+  ctx.shadowColor='#0f0'; ctx.shadowBlur=10;
+  ctx.fillText('STAGE CLEAR!', CW/2, CH/2-14);
+  ctx.shadowBlur=0;
+  ctx.fillStyle='#ff0'; ctx.font='bold 8px monospace';
+  ctx.fillText('LEVEL ' + gameLevel + ' COMPLETE', CW/2, CH/2+4);
+  ctx.fillStyle='#0cf';
+  ctx.fillText('SCORE: ' + score, CW/2, CH/2+18);
+  if (lcTimer > 1600) {
+    ctx.fillStyle=Math.floor(lcTimer/400)%2===0?'#fff':'#555';
+    ctx.fillText(gameLevel>=20?'CONGRATULATIONS!':'PRESS ANY KEY', CW/2, CH/2+34);
+  }
+}
+
+function drawGameOver() {
+  ctx.fillStyle='rgba(0,0,0,0.72)'; ctx.fillRect(0,0,CW,CH);
+  ctx.fillStyle='#f44'; ctx.font='bold 16px monospace'; ctx.textAlign='center';
+  ctx.shadowColor='#f44'; ctx.shadowBlur=12;
+  ctx.fillText('GAME OVER', CW/2, CH/2-18);
+  ctx.shadowBlur=0;
+  ctx.fillStyle='#ff0'; ctx.font='bold 8px monospace';
+  ctx.fillText('SCORE: ' + score, CW/2, CH/2);
+  ctx.fillStyle='#0cf';
+  ctx.fillText('BEST:  ' + hiScore, CW/2, CH/2+14);
+  ctx.fillStyle=Math.floor(goTimer/480)%2===0?'#ff0':'#664';
+  ctx.fillText('PRESS SPACE TO RETRY', CW/2, CH/2+34);
+}
+
+// ── Main render ───────────────────────────────────────────
+function draw() {
+  ctx.textAlign='center';
+  if (STATE==='TITLE')      { drawTitle(); }
+  else if (STATE==='OPENING') { drawOpening(); }
+  else {
+    drawGame();
+    if (STATE==='PAUSE')      drawPause();
+    if (STATE==='LEVELCLEAR') drawLevelClear();
+    if (STATE==='GAMEOVER')   drawGameOver();
+  }
+}
+
+// ── Game loop ─────────────────────────────────────────────
+function loop(ts) {
+  const dt = Math.min(80, ts - lastTS);
+  lastTS = ts;
+
+  if (STATE==='TITLE')      titleTimer += dt;
+  if (STATE==='OPENING')    openTimer  += dt;
+  if (STATE==='GAMEOVER')   goTimer    += dt;
+  if (STATE==='LEVELCLEAR') lcTimer    += dt;
+
+  if (STATE==='PLAYING' && !clearing && cap) {
+    fallTimer += dt;
+    if (fallTimer >= fallInterval) {
+      fallTimer = 0;
+      if (!moveCap(1,0)) lockCap();
+    }
+  }
+
+  if (clearing) {
+    clearFlash++;
+    if (clearFlash >= 28) finishClear();
+  }
+
+  draw();
+  requestAnimationFrame(loop);
+}
+
+// ── Keyboard input ────────────────────────────────────────
+window.addEventListener('keydown', e => {
+  if (AC.state==='suspended') AC.resume();
+
+  if (STATE==='TITLE') {
+    if (e.code==='Space'||e.code==='Enter') { startNewGame(); return; }
+    if (e.code==='ArrowUp')   { gameLevel=Math.min(20,gameLevel+1); return; }
+    if (e.code==='ArrowDown') { gameLevel=Math.max(1, gameLevel-1); return; }
+  }
+  if (STATE==='GAMEOVER' && (e.code==='Space'||e.code==='Enter')) {
+    STATE='TITLE'; return;
+  }
+  if (STATE==='LEVELCLEAR' && lcTimer > 1600) { advanceLevel(); return; }
+  if (STATE==='PAUSE') {
+    if (e.code==='Escape'||e.code==='KeyP'||e.code==='Space'||e.code==='Enter') {
+      STATE='PLAYING'; playMelody(gameLevel>=11?MELODY_A:MELODY_B);
+    }
+    return;
+  }
+  if (STATE!=='PLAYING') return;
+  if (e.code==='Escape'||e.code==='KeyP') { STATE='PAUSE'; stopMusic(); return; }
+  if (!cap||clearing) return;
+  if (e.code==='ArrowLeft')  moveCap(0,-1);
+  if (e.code==='ArrowRight') moveCap(0,1);
+  if (e.code==='ArrowDown')  { if(moveCap(1,0)){fallTimer=0;score+=1;} }
+  if (e.code==='ArrowUp'||e.code==='KeyX') rotateCap(1);
+  if (e.code==='KeyZ') rotateCap(-1);
+  if (e.code==='Space') hardDrop();
+  e.preventDefault();
+});
+
+// ── Mobile buttons ────────────────────────────────────────
+const DEBOUNCE_MS = 120;
+function mBtn(id, onDown, onUp) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const fn = (e) => {
+    e.preventDefault();
+    if (AC.state==='suspended') AC.resume();
+    onDown();
+  };
+  el.addEventListener('touchstart', fn, {passive:false});
+  if (onUp) el.addEventListener('touchend', e=>{e.preventDefault();onUp();},{passive:false});
+  // Also mouse for desktop testing
+  el.addEventListener('mousedown', fn);
+  if (onUp) el.addEventListener('mouseup', onUp);
+}
+let leftHeld=false, rightHeld=false, downHeld=false;
+let moveInterval=null;
+
+function startHold(fn) {
+  fn(); fn();
+  moveInterval = setInterval(fn, 80);
+}
+function stopHold() { clearInterval(moveInterval); moveInterval=null; }
+
+mBtn('mbtn-left',  ()=>{ if(STATE==='PLAYING'&&cap&&!clearing){startHold(()=>moveCap(0,-1));} }, stopHold);
+mBtn('mbtn-right', ()=>{ if(STATE==='PLAYING'&&cap&&!clearing){startHold(()=>moveCap(0,1));} }, stopHold);
+mBtn('mbtn-down',  ()=>{ if(STATE==='PLAYING'&&cap&&!clearing){startHold(()=>{if(moveCap(1,0)){fallTimer=0;score+=1;}});} }, stopHold);
+mBtn('mbtn-rotl',  ()=>{ if(STATE==='TITLE'){startNewGame();return;} if(STATE==='PLAYING'&&cap&&!clearing)rotateCap(-1); });
+mBtn('mbtn-rotr',  ()=>{ if(STATE==='PLAYING'&&cap&&!clearing)rotateCap(1); });
+mBtn('mbtn-drop',  ()=>{
+  if(STATE==='TITLE'){startNewGame();return;}
+  if(STATE==='GAMEOVER'){STATE='TITLE';return;}
+  if(STATE==='LEVELCLEAR'&&lcTimer>1600){advanceLevel();return;}
+  if(STATE==='PLAYING')hardDrop();
+});
+mBtn('mbtn-pause', ()=>{
+  if(STATE==='PLAYING'){STATE='PAUSE';stopMusic();}
+  else if(STATE==='PAUSE'){STATE='PLAYING';playMelody(gameLevel>=11?MELODY_A:MELODY_B);}
+});
+
+// Mobile level select
+document.getElementById('mbtn-rotl')?.addEventListener('touchstart', e=>{
+  if(STATE==='TITLE'){e.preventDefault();gameLevel=Math.max(1,gameLevel-1);}
+}, {passive:false});
+document.getElementById('mbtn-rotr')?.addEventListener('touchstart', e=>{
+  if(STATE==='TITLE'){e.preventDefault();gameLevel=Math.min(20,gameLevel+1);}
+}, {passive:false});
+
+// ── Init ─────────────────────────────────────────────────
+computeLayout();
+requestAnimationFrame(()=>requestAnimationFrame(computeLayout));
+window.addEventListener('resize', computeLayout);
+requestAnimationFrame(ts => { lastTS = ts; requestAnimationFrame(loop); });
+</script>
+</body>
+</html>
