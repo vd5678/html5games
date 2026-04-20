@@ -743,40 +743,46 @@ function drawGame() {
 
 function drawPause() {
   ctx.fillStyle='rgba(0,0,0,0.65)'; ctx.fillRect(0,0,CW,CH);
+  const mx = BX + COLS*CELL/2;
+  const my = BY + ROWS*CELL/2;
   ctx.fillStyle='#fff'; ctx.font='bold 14px monospace'; ctx.textAlign='center';
-  ctx.fillText('PAUSE', CW/2, CH/2-6);
+  ctx.fillText('PAUSE', mx, my-6);
   ctx.fillStyle='#888'; ctx.font='8px monospace';
-  ctx.fillText('P / ESC to resume', CW/2, CH/2+12);
+  ctx.fillText('P / ESC to resume', mx, my+12);
 }
 
 function drawLevelClear() {
   ctx.fillStyle='rgba(0,0,0,0.6)'; ctx.fillRect(0,0,CW,CH);
+  const mx = BX + COLS*CELL/2;
+  const my = BY + ROWS*CELL/2;
   ctx.fillStyle='#0f0'; ctx.font='bold 14px monospace'; ctx.textAlign='center';
   ctx.shadowColor='#0f0'; ctx.shadowBlur=10;
-  ctx.fillText('STAGE CLEAR!', CW/2, CH/2-14);
+  ctx.fillText('STAGE CLEAR!', mx, my-14);
   ctx.shadowBlur=0;
   ctx.fillStyle='#ff0'; ctx.font='bold 8px monospace';
-  ctx.fillText('LEVEL ' + gameLevel + ' COMPLETE', CW/2, CH/2+4);
+  ctx.fillText('LEVEL ' + gameLevel + ' COMPLETE', mx, my+4);
   ctx.fillStyle='#0cf';
-  ctx.fillText('SCORE: ' + score, CW/2, CH/2+18);
+  ctx.fillText('SCORE: ' + score, mx, my+18);
   if (lcTimer > 1600) {
     ctx.fillStyle=Math.floor(lcTimer/400)%2===0?'#fff':'#555';
-    ctx.fillText(gameLevel>=20?'CONGRATULATIONS!':'PRESS ANY KEY', CW/2, CH/2+34);
+    ctx.fillText(gameLevel>=20?'CONGRATULATIONS!':'PRESS ANY KEY', mx, my+34);
   }
 }
 
 function drawGameOver() {
   ctx.fillStyle='rgba(0,0,0,0.72)'; ctx.fillRect(0,0,CW,CH);
+  const mx = BX + COLS*CELL/2;
+  const my = BY + ROWS*CELL/2;
   ctx.fillStyle='#f44'; ctx.font='bold 16px monospace'; ctx.textAlign='center';
   ctx.shadowColor='#f44'; ctx.shadowBlur=12;
-  ctx.fillText('GAME OVER', CW/2, CH/2-18);
+  ctx.fillText('GAME OVER', mx, my-18);
   ctx.shadowBlur=0;
   ctx.fillStyle='#ff0'; ctx.font='bold 8px monospace';
-  ctx.fillText('SCORE: ' + score, CW/2, CH/2);
+  ctx.fillText('SCORE: ' + score, mx, my);
   ctx.fillStyle='#0cf';
-  ctx.fillText('BEST:  ' + hiScore, CW/2, CH/2+14);
+  ctx.fillText('BEST:  ' + hiScore, mx, my+14);
   ctx.fillStyle=Math.floor(goTimer/480)%2===0?'#ff0':'#664';
-  ctx.fillText('PRESS SPACE TO RETRY', CW/2, CH/2+34);
+  ctx.fillText('PRESS SPACE TO RETRY', mx, my+34);
 }
 
 // ── Main render ───────────────────────────────────────────
