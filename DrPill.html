@@ -825,8 +825,6 @@ window.addEventListener('keydown', e => {
 
   if (STATE==='TITLE') {
     if (e.code==='Space'||e.code==='Enter') { startNewGame(); return; }
-    if (e.code==='ArrowUp')   { gameLevel=Math.min(20,gameLevel+1); return; }
-    if (e.code==='ArrowDown') { gameLevel=Math.max(1, gameLevel-1); return; }
   }
   if (STATE==='GAMEOVER' && (e.code==='Space'||e.code==='Enter')) {
     STATE='TITLE'; return;
@@ -890,14 +888,6 @@ mBtn('mbtn-pause', ()=>{
   if(STATE==='PLAYING'){STATE='PAUSE';stopMusic();}
   else if(STATE==='PAUSE'){STATE='PLAYING';playMelody(gameLevel>=11?MELODY_A:MELODY_B);}
 });
-
-// Mobile level select
-document.getElementById('mbtn-rotl')?.addEventListener('touchstart', e=>{
-  if(STATE==='TITLE'){e.preventDefault();gameLevel=Math.max(1,gameLevel-1);}
-}, {passive:false});
-document.getElementById('mbtn-rotr')?.addEventListener('touchstart', e=>{
-  if(STATE==='TITLE'){e.preventDefault();gameLevel=Math.min(20,gameLevel+1);}
-}, {passive:false});
 
 // ── Init ─────────────────────────────────────────────────
 computeLayout();
