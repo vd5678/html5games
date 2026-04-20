@@ -641,27 +641,17 @@ function drawTitle() {
   drawVirus(vx+24, 76, YEL);
   drawVirus(vx+48, 76, BLU);
 
-  // Level selector
-  ctx.font='bold 7px monospace'; ctx.fillStyle='#aaa';
-  ctx.fillText('STARTING LEVEL  ( ↑↓ TO CHANGE )', tx, 104);
-  ctx.fillStyle='#fff'; ctx.font='bold 16px monospace';
-  ctx.fillText('◀  ' + String(gameLevel).padStart(2,'0') + '  ▶', tx, 122);
-
-  // Virus count preview
-  ctx.fillStyle='#888'; ctx.font='7px monospace';
-  ctx.fillText('VIRUSES: ' + virusCountForLevel(gameLevel), tx, 134);
-
   // Blink start
   ctx.fillStyle = Math.floor(titleTimer/480)%2===0 ? '#ff0' : '#554400';
   ctx.font='bold 8px monospace';
-  ctx.fillText('── PRESS SPACE TO START ──', tx, 152);
+  ctx.fillText('── PRESS SPACE TO START ──', tx, 114);
 
   ctx.fillStyle='#444'; ctx.font='7px monospace';
-  ctx.fillText('Z/X/↑  ROTATE   ↓  FASTER   SPACE  HARD DROP', tx, 166);
-  ctx.fillText('P / ESC  PAUSE', tx, 176);
+  ctx.fillText('Z/X/↑  ROTATE   ↓  FASTER   SPACE  HARD DROP', tx, 128);
+  ctx.fillText('P / ESC  PAUSE', tx, 138);
 
   // Draw doctor on title
-  drawDoctor(Math.round(tx-9), 184, Math.floor(titleTimer/300)%2===0);
+  drawDoctor(Math.round(tx-9), 148, Math.floor(titleTimer/300)%2===0);
 }
 
 function drawOpening() {
