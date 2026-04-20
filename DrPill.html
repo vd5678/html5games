@@ -243,9 +243,19 @@ function placeViruses(lv) {
 }
 
 // ── Capsule ───────────────────────────────────────────────
+// orient: 0=H(A,B)  1=V(B-top,A-bot)  2=H(B,A)  3=V(A-top,B-bot)
 function capCells(p) {
-  if (p.orient === 0) return [[p.r, p.c], [p.r, p.c+1]];
-  return [[p.r, p.c], [p.r+1, p.c]];
+  if (p.orient % 2 === 0) return [[p.r, p.c], [p.r, p.c+1]]; // horizontal
+  return [[p.r, p.c], [p.r+1, p.c]]; // vertical
+}
+// Returns [colorForCell0, colorForCell1] given orient
+function capColors(p) {
+  switch(p.orient) {
+    case 0: return [p.colors[0], p.colors[1]];
+    case 1: return [p.colors[1], p.colors[0]]; // top=colors[1], bot=colors[0]
+    case 2: return [p.colors[1], p.colors[0]]; // left=colors[1], right=colors[0]
+    case 3: return [p.colors[0], p.colors[1]]; // top=colors[0], bot=colors[1]
+  }
 }
 
 function canPlace(p) {
@@ -279,20 +289,17 @@ function moveCap(dr, dc) {
 
 function rotateCap(dir) { // dir: 1=CW, -1=CCW
   if (!cap) return;
-  let nc;
-  if (cap.orient === 0) {
-    // H→V: top=colors[0], bottom=colors[1]
-    nc = {...cap, orient:1};
-    if (dir === -1) nc.colors = [cap.colors[1], cap.colors[0]];
-    if (!canPlace(nc)) {
-      const kick = {...nc, c:nc.c-1};
-      if (canPlace(kick)) nc = kick; else return;
+  const newOrient = (cap.orient + (dir === 1 ? 1 : 3)) % 4;
+  let nc = {...cap, orient: newOrient};
+  if (!canPlace(nc)) {
+    // Wall-kick attempts: shift left, right, up
+    const kicks = [[0,-1],[0,1],[-1,0]];
+    let kicked = false;
+    for (const [dr,dc] of kicks) {
+      const k = {...nc, r:nc.r+dr, c:nc.c+dc};
+      if (canPlace(k)) { nc = k; kicked = true; break; }
     }
-  } else {
-    // V→H: left=colors[0], right=colors[1]
-    nc = {...cap, orient:0};
-    if (dir === -1) nc.colors = [cap.colors[1], cap.colors[0]];
-    if (!canPlace(nc)) return;
+    if (!kicked) return;
   }
   cap = nc;
   sndRotate();
@@ -308,8 +315,9 @@ function hardDrop() {
 function lockCap() {
   if (!cap) return;
   const cells = capCells(cap);
+  const colors = capColors(cap);
   cells.forEach(([r,c], i) => {
-    board[r][c] = { type:'cap', color:cap.colors[i], paired:cells[1-i] };
+    board[r][c] = { type:'cap', color:colors[i], paired:cells[1-i] };
   });
   sndLand();
   cap = null;
@@ -707,20 +715,27 @@ function drawGame() {
 
   // Active capsule + ghost
   if (cap && STATE==='PLAYING') {
-    // Ghost
+    const cols = capColors(cap);
+    // Ghost — outline only (no fill) so it won't be confused with real capsule
     let ghost = {...cap};
     while (canPlace({...ghost, r:ghost.r+1})) ghost.r++;
     if (ghost.r !== cap.r) {
-      ctx.globalAlpha=0.22;
-      capCells(ghost).forEach(([r,c],i)=>drawCapsuleHalf(px(c),py(r),cap.colors[i]));
-      ctx.globalAlpha=1;
+      ctx.save();
+      ctx.setLineDash([2,2]);
+      ctx.lineWidth = 1;
+      capCells(ghost).forEach(([r,c],i) => {
+        ctx.strokeStyle = FILL[cols[i]];
+        ctx.strokeRect(px(c)+2, py(r)+2, CELL-4, CELL-4);
+      });
+      ctx.setLineDash([]);
+      ctx.restore();
     }
     // Capsule
-    capCells(cap).forEach(([r,c],i)=>drawCapsuleHalf(px(c),py(r),cap.colors[i]));
+    capCells(cap).forEach(([r,c],i)=>drawCapsuleHalf(px(c),py(r),cols[i]));
     // Connector bar between halves
-    ctx.fillStyle=FILL[cap.colors[0]];
-    if (cap.orient===0) ctx.fillRect(px(cap.c)+CELL-1, py(cap.r)+3, 2, CELL-6);
-    else                ctx.fillRect(px(cap.c)+3, py(cap.r)+CELL-1, CELL-6, 2);
+    ctx.fillStyle=FILL[cols[0]];
+    if (cap.orient%2===0) ctx.fillRect(px(cap.c)+CELL-1, py(cap.r)+3, 2, CELL-6);
+    else                  ctx.fillRect(px(cap.c)+3, py(cap.r)+CELL-1, CELL-6, 2);
   }
 
   drawSidebar();
