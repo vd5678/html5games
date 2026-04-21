@@ -215,6 +215,21 @@
     </div>
   </a>
 
+  <!-- Puzzle Bobble -->
+  <a class="card" href="PuzzleBobble.html" style="--accent:#40c040;--accent-glow:#40c0402a;">
+    <div class="thumb-wrap">
+      <canvas id="thumb-pb" width="224" height="256"></canvas>
+      <div class="card-overlay"><span class="play-btn">▶ PLAY</span></div>
+    </div>
+    <div class="card-info">
+      <div class="card-title">PUZZLE BOBBLE</div>
+      <div class="card-sub">泡泡龍 · 射擊消泡泡<br>5關設計 · 反彈技巧</div>
+      <span class="card-tag">MOUSE / TAP</span>
+      <span class="card-tag">CLICK 發射</span>
+      <span class="card-tag">TOUCH</span>
+    </div>
+  </a>
+
 </div>
 
 <footer>
@@ -223,8 +238,9 @@
 </footer>
 
 <script>
+document.fonts.ready.then(function(){
 // ── Arkanoid thumbnail ─────────────────────────────────
-(function(){
+try{(function(){
   const cv = document.getElementById('thumb-arkanoid');
   const ctx = cv.getContext('2d');
   const W = 224, H = 256;
@@ -265,10 +281,8 @@
   ctx.fillStyle='#0f0'; ctx.beginPath(); ctx.roundRect(60,170,16,8,3); ctx.fill();
   ctx.fillStyle='#fff'; ctx.font='bold 7px monospace'; ctx.textAlign='center';
   ctx.fillText('E',68,177);
-})();
-
-// ── Snake thumbnail ────────────────────────────────────
-(function(){
+})();}catch(e){console.warn('thumb-arkanoid',e);}
+try{(function(){
   const cv = document.getElementById('thumb-snake');
   const ctx = cv.getContext('2d');
   const W=280, H=320;
@@ -331,10 +345,8 @@
   ctx.fillStyle='#0F380F88';
   ctx.font='7px "Press Start 2P",monospace'; ctx.textAlign='left';
   ctx.fillText('+10', OX+3*CELL, OY+7*CELL-2);
-})();
-
-// ── Tetris thumbnail ───────────────────────────────────
-(function(){
+})();}catch(e){console.warn('thumb-snake',e);}
+try{(function(){
   const cv = document.getElementById('thumb-tetris');
   const ctx = cv.getContext('2d');
   const W=224, H=256;
@@ -415,10 +427,8 @@
     ctx.fillStyle=col; ctx.fillRect(nx,ny,9,9);
     ctx.fillStyle='rgba(255,255,255,0.3)'; ctx.fillRect(nx+1,ny+1,7,2);
   }));
-})();
-
-// ── Dr. Pill thumbnail ──────────────────────────────────
-(function(){
+})();}catch(e){console.warn('thumb-tetris',e);}
+try{(function(){
   const cv = document.getElementById('thumb-drpill');
   const ctx = cv.getContext('2d');
   const W=224, H=256;
@@ -567,7 +577,90 @@
   ctx.fillStyle='#111';
   ctx.fillRect(x+1,y+37,6,3); ctx.fillRect(x+10,y+35,6,3);
   ctx.restore();
-})();
+})();}catch(e){console.warn('thumb-drpill',e);}
+try{(function(){
+  const cv = document.getElementById('thumb-pb');
+  if (!cv) return;
+  const ctx = cv.getContext('2d');
+  const W = 224, H = 256;
+  ctx.fillStyle = '#0d0d18'; ctx.fillRect(0,0,W,H);
+  // walls
+  ctx.fillStyle = '#2a2a3a';
+  ctx.fillRect(0,0,9,H); ctx.fillRect(215,0,9,H);
+  ctx.fillStyle = '#1e1e2e'; ctx.fillRect(0,0,W,9);
+  // bubble grid
+  const PAL = ['#e84040','#f07020','#e8e020','#40c040','#3068e0','#9040d0'];
+  const PAL_D = ['#901010','#a84010','#a0a000','#108010','#1038a0','#5a0098'];
+  const layout = [
+    [0,0,1,1,2,2,3,3,4],
+    [0,1,1,2,2,3,3,4],
+    [1,1,2,2,3,3,4,4,0],
+    [1,2,2,3,3,4,4,0],
+    [2,2,3,3,4,4,5,5,1],
+  ];
+  const BR=11, DIA=22, ROW_H=19, GX0=24, GY0=20;
+  layout.forEach((row, r) => {
+    row.forEach((ci, c) => {
+      const x = GX0 + c*DIA + (r%2 ? BR : 0);
+      const y = GY0 + r*ROW_H;
+      // shadow
+      ctx.shadowColor = PAL[ci]; ctx.shadowBlur = 4;
+      ctx.fillStyle = PAL[ci];
+      ctx.beginPath(); ctx.arc(x, y, BR, 0, Math.PI*2); ctx.fill();
+      ctx.shadowBlur = 0;
+      // dark base
+      const g = ctx.createRadialGradient(x, y+BR*0.3, 1, x, y, BR);
+      g.addColorStop(0, PAL_D[ci]); g.addColorStop(1, PAL[ci]);
+      ctx.fillStyle = g;
+      ctx.beginPath(); ctx.arc(x, y, BR, 0, Math.PI*2); ctx.fill();
+      // shine
+      ctx.fillStyle = 'rgba(255,255,255,0.5)';
+      ctx.beginPath(); ctx.ellipse(x-BR*0.28, y-BR*0.3, BR*0.38, BR*0.22, -0.5, 0, Math.PI*2); ctx.fill();
+    });
+  });
+  // cannon
+  const cx = W/2, cy = H - 52;
+  const barrelAngle = -Math.PI * 0.6;
+  ctx.save();
+  ctx.translate(cx, cy);
+  ctx.rotate(barrelAngle + Math.PI / 2);  // +π/2: barrel drawn pointing up, offset to aim direction
+  const bg = ctx.createLinearGradient(-5,0,5,0);
+  bg.addColorStop(0,'#666'); bg.addColorStop(0.5,'#aaa'); bg.addColorStop(1,'#555');
+  ctx.fillStyle = bg;
+  ctx.fillRect(-5, -(BR+16), 10, BR+16);
+  ctx.restore();
+  ctx.fillStyle = '#555';
+  ctx.beginPath(); ctx.arc(cx, cy, BR+2, 0, Math.PI*2); ctx.fill();
+  ctx.fillStyle = '#888';
+  ctx.beginPath(); ctx.arc(cx, cy, BR, 0, Math.PI*2); ctx.fill();
+  // bubble in cannon
+  ctx.shadowColor = PAL[3]; ctx.shadowBlur = 4;
+  ctx.fillStyle = PAL[3];
+  ctx.beginPath(); ctx.arc(cx, cy, BR, 0, Math.PI*2); ctx.fill();
+  ctx.shadowBlur = 0;
+  ctx.fillStyle = 'rgba(255,255,255,0.5)';
+  ctx.beginPath(); ctx.ellipse(cx-BR*0.28, cy-BR*0.3, BR*0.38, BR*0.22, -0.5, 0, Math.PI*2); ctx.fill();
+  // aim line – start from muzzle tip
+  const muzzleDist = BR + 16;
+  const muzzleX = cx + Math.cos(barrelAngle) * muzzleDist;
+  const muzzleY = cy + Math.sin(barrelAngle) * muzzleDist;
+  ctx.save();
+  ctx.setLineDash([3,7]);
+  ctx.strokeStyle = 'rgba(255,255,255,0.3)';
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  ctx.moveTo(muzzleX, muzzleY);
+  let ax = muzzleX, ay = muzzleY, avx = Math.cos(barrelAngle), avy = Math.sin(barrelAngle);
+  for (let i=0; i<80; i++) {
+    ax += avx*4; ay += avy*4;
+    if (ax < 20) { ax=20; avx=Math.abs(avx); }
+    if (ax > 204) { ax=204; avx=-Math.abs(avx); }
+    ctx.lineTo(ax, ay);
+  }
+  ctx.stroke();
+  ctx.restore();
+})();}catch(e){console.warn('thumb-pb',e);}
+}); // document.fonts.ready
 </script>
 </body>
 </html>
