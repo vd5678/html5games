@@ -276,7 +276,7 @@
     </div>
     <div class="card-info">
       <div class="card-title">NEXUS VIPER</div>
-      <div class="card-sub">橫向捲軸射擊 · 武器升級<br>Boss 戰 · 無限火力</div>
+      <div class="card-sub">橫向捲軸射擊 · 6 種武器升級<br>5 關 Boss 弱點擊破 · 防護罩</div>
       <span class="card-tag">← → ↑ ↓ Z</span>
       <span class="card-tag">TOUCH</span>
       <span class="card-tag">P 暫停</span>
@@ -905,89 +905,182 @@ try{(function(){
   const ctx=cv.getContext('2d');
   ctx.scale(DPR,DPR);
 
-  // BG
-  ctx.fillStyle='#000810'; ctx.fillRect(0,0,TW,TH);
-  // Stars
+  // Dark space BG
+  ctx.fillStyle='#060912'; ctx.fillRect(0,0,TW,TH);
   const rng=(s)=>{let x=s;return()=>{x=Math.sin(x*127.1+311.7)*43758.5453;return x-Math.floor(x);};};
-  const r=rng(42);
-  for(let i=0;i<60;i++){
-    const bri=Math.floor(80+r()*176);
-    ctx.fillStyle=`rgb(${bri},${bri},${bri})`;
-    ctx.fillRect(r()*TW,r()*TH*0.82,r()<0.3?2:1,1);
+  const r=rng(17);
+  for(let i=0;i<55;i++){
+    const brt=Math.floor(55+r()*130),sz=r()<0.08?2:1;
+    ctx.fillStyle=`rgb(${brt},${brt},${brt})`;
+    ctx.fillRect(Math.floor(r()*TW),Math.floor(r()*TH),sz,sz);
   }
 
-  // Player ship
-  const px=28,py=TH/2-6;
-  ctx.fillStyle='#88ccff';
-  ctx.fillRect(px+6,py+4,14,4); ctx.fillRect(px+4,py+3,18,6);
-  ctx.fillStyle='#fff'; ctx.fillRect(px+20,py+5,4,2);
-  ctx.fillStyle='#0cf'; ctx.fillRect(px+12,py+4,6,4);
-  ctx.fillStyle='#ff8800'; ctx.fillRect(px,py+4,3,4);
-  ctx.fillStyle='#ffcc00'; ctx.fillRect(px-4,py+5,3,2);
+  // ── Planet (background) ──
+  {
+    const px=155,py=TH+8,pr=105;
+    const g=ctx.createRadialGradient(px-28,py-38,6,px,py,pr);
+    g.addColorStop(0,'#7733cc'); g.addColorStop(0.45,'#441199');
+    g.addColorStop(0.85,'#280066'); g.addColorStop(1,'#0d0022');
+    ctx.fillStyle=g;
+    ctx.beginPath(); ctx.arc(px,py,pr,0,Math.PI*2); ctx.fill();
+    ctx.save();
+    ctx.beginPath(); ctx.arc(px,py,pr,0,Math.PI*2); ctx.clip();
+    ctx.fillStyle='rgba(50,15,140,0.55)'; ctx.fillRect(px-pr,py-26,pr*2,26);
+    ctx.fillStyle='rgba(55,20,150,0.35)'; ctx.fillRect(px-pr,py+12,pr*2,18);
+    ctx.restore();
+    ctx.strokeStyle='rgba(150,80,255,0.45)'; ctx.lineWidth=5;
+    ctx.beginPath(); ctx.arc(px,py,pr+1,0,Math.PI*2); ctx.stroke();
+    ctx.strokeStyle='rgba(150,80,255,0.15)'; ctx.lineWidth=12;
+    ctx.beginPath(); ctx.arc(px,py,pr+5,0,Math.PI*2); ctx.stroke();
+    ctx.save(); ctx.translate(px,py); ctx.scale(1,0.22);
+    ctx.strokeStyle='rgba(185,140,255,0.55)'; ctx.lineWidth=9;
+    ctx.beginPath(); ctx.arc(0,0,pr+28,-Math.PI*0.12,Math.PI*1.05); ctx.stroke();
+    ctx.restore();
+  }
 
-  // Laser beam
-  ctx.strokeStyle='#0ff'; ctx.lineWidth=2;
-  ctx.shadowColor='#0ff'; ctx.shadowBlur=8;
-  ctx.beginPath(); ctx.moveTo(px+24,py+6); ctx.lineTo(TW-10,py+6); ctx.stroke();
-  ctx.shadowBlur=0;
+  // ── Ship: nose pointing toward viewer, delta-wing, top-down tilt ──
+  const CX=112;
 
-  // Option drone
-  ctx.fillStyle='#ff8c00';
-  ctx.shadowColor='#ffa500'; ctx.shadowBlur=6;
-  ctx.beginPath(); ctx.arc(px-16,py+6,5,0,Math.PI*2); ctx.fill();
-  ctx.fillStyle='#ffcc00'; ctx.beginPath(); ctx.arc(px-16,py+6,3,0,Math.PI*2); ctx.fill();
-  ctx.shadowBlur=0;
+  // Left wing
+  ctx.fillStyle='#5a85a8';
+  ctx.beginPath();
+  ctx.moveTo(CX-16,88); ctx.lineTo(CX-18,158);
+  ctx.lineTo(CX-62,178); ctx.lineTo(CX-94,150);
+  ctx.closePath(); ctx.fill();
+  ctx.fillStyle='#7aaabf';
+  ctx.beginPath();
+  ctx.moveTo(CX-16,88); ctx.lineTo(CX-94,150);
+  ctx.lineTo(CX-88,146); ctx.lineTo(CX-18,93);
+  ctx.closePath(); ctx.fill();
+  ctx.fillStyle='#3a6080';
+  ctx.beginPath();
+  ctx.moveTo(CX-18,158); ctx.lineTo(CX-62,178);
+  ctx.lineTo(CX-65,182); ctx.lineTo(CX-20,164);
+  ctx.closePath(); ctx.fill();
 
-  // Enemies
-  // dart
-  [[140,70],[160,100],[150,140],[170,160]].forEach(([ex,ey])=>{
-    ctx.fillStyle='#ff4444';
-    ctx.fillRect(ex,ey+2,12,6); ctx.fillRect(ex+2,ey,8,10);
-    ctx.fillStyle='#ff8888'; ctx.fillRect(ex+10,ey+4,3,2);
+  // Right wing
+  ctx.fillStyle='#5a85a8';
+  ctx.beginPath();
+  ctx.moveTo(CX+16,88); ctx.lineTo(CX+18,158);
+  ctx.lineTo(CX+62,178); ctx.lineTo(CX+94,150);
+  ctx.closePath(); ctx.fill();
+  ctx.fillStyle='#7aaabf';
+  ctx.beginPath();
+  ctx.moveTo(CX+16,88); ctx.lineTo(CX+94,150);
+  ctx.lineTo(CX+88,146); ctx.lineTo(CX+18,93);
+  ctx.closePath(); ctx.fill();
+  ctx.fillStyle='#3a6080';
+  ctx.beginPath();
+  ctx.moveTo(CX+18,158); ctx.lineTo(CX+62,178);
+  ctx.lineTo(CX+65,182); ctx.lineTo(CX+20,164);
+  ctx.closePath(); ctx.fill();
+
+  // Wing panel lines
+  ctx.strokeStyle='#3a6880'; ctx.lineWidth=1;
+  ctx.beginPath(); ctx.moveTo(CX-38,108); ctx.lineTo(CX-58,170); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(CX-62,126); ctx.lineTo(CX-78,155); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(CX+38,108); ctx.lineTo(CX+58,170); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(CX+62,126); ctx.lineTo(CX+78,155); ctx.stroke();
+  ctx.strokeStyle='#2a5070'; ctx.lineWidth=1;
+  ctx.beginPath(); ctx.moveTo(CX-16,88); ctx.lineTo(CX-18,158); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(CX+16,88); ctx.lineTo(CX+18,158); ctx.stroke();
+
+  // Main fuselage
+  ctx.fillStyle='#6e96b5';
+  ctx.beginPath();
+  ctx.moveTo(CX,30);
+  ctx.bezierCurveTo(CX+8,42,CX+16,65,CX+18,88);
+  ctx.lineTo(CX+18,158); ctx.lineTo(CX+14,198); ctx.lineTo(CX-14,198);
+  ctx.lineTo(CX-18,158);
+  ctx.bezierCurveTo(CX-16,65,CX-8,42,CX,30);
+  ctx.fill();
+  // Fuselage top highlight
+  ctx.fillStyle='#96bcd4';
+  ctx.beginPath();
+  ctx.moveTo(CX,30);
+  ctx.bezierCurveTo(CX+5,42,CX+9,65,CX+10,88);
+  ctx.lineTo(CX+10,156); ctx.lineTo(CX-10,156);
+  ctx.bezierCurveTo(CX-9,65,CX-5,42,CX,30);
+  ctx.fill();
+  // Spine glint
+  ctx.strokeStyle='#b8d8ee'; ctx.lineWidth=1;
+  ctx.beginPath(); ctx.moveTo(CX,32); ctx.lineTo(CX,155); ctx.stroke();
+  // Belly shadow
+  ctx.fillStyle='#3a6080';
+  ctx.beginPath();
+  ctx.moveTo(CX-18,158); ctx.lineTo(CX-14,198);
+  ctx.lineTo(CX+14,198); ctx.lineTo(CX+18,158);
+  ctx.lineTo(CX+16,155); ctx.lineTo(CX-16,155);
+  ctx.closePath(); ctx.fill();
+  // Panel lines
+  ctx.strokeStyle='#3a6880'; ctx.lineWidth=1;
+  ctx.beginPath(); ctx.moveTo(CX+8,82); ctx.lineTo(CX+10,155); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(CX-8,82); ctx.lineTo(CX-10,155); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(CX-14,118); ctx.lineTo(CX+14,118); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(CX-16,145); ctx.lineTo(CX+16,145); ctx.stroke();
+
+  // Air intakes
+  ctx.fillStyle='#1a2a3a';
+  ctx.fillRect(CX+13,92,6,20); ctx.fillRect(CX-19,92,6,20);
+  ctx.fillStyle='#0c1520';
+  ctx.fillRect(CX+14,93,4,18); ctx.fillRect(CX-18,93,4,18);
+
+  // Weapon pylons + missile tips
+  [[CX-52,144,13,8],[CX-72,150,12,8],[CX+39,144,13,8],[CX+60,150,12,8]].forEach(([x,y,w,h])=>{
+    ctx.fillStyle='#243445'; ctx.fillRect(x,y,w,h);
+    ctx.fillStyle='#1a2838'; ctx.fillRect(x,y,w,2);
+    ctx.fillStyle='#314455'; ctx.fillRect(x,y+2,2,h-2);
   });
-  // Boss
-  const bx=TW-72,by=TH/2-40;
-  ctx.fillStyle='#334466';
-  ctx.fillRect(bx,by+10,60,60); ctx.fillRect(bx+8,by,44,80);
-  ctx.fillStyle='#223355'; ctx.fillRect(bx+2,by+12,12,56);
-  ctx.fillStyle='#112233'; ctx.fillRect(bx-8,by+18,12,8); ctx.fillRect(bx-8,by+54,12,8);
-  // Core glow
-  ctx.fillStyle='#ff8800'; ctx.shadowColor='#f80'; ctx.shadowBlur=12;
-  ctx.beginPath(); ctx.arc(bx+30,by+40,10,0,Math.PI*2); ctx.fill();
-  ctx.shadowBlur=0;
-  // Boss HP bar
-  ctx.fillStyle='#111'; ctx.fillRect(bx,by-8,60,4);
-  ctx.fillStyle='#f80'; ctx.fillRect(bx,by-8,35,4);
-
-  // Capsule
-  ctx.fillStyle='#ffcc00'; ctx.shadowColor='#ffcc00'; ctx.shadowBlur=6;
-  ctx.fillRect(90,TH/2+20,12,12);
-  ctx.fillStyle='#ff8800'; ctx.fillRect(92,TH/2+22,8,8);
-  ctx.shadowBlur=0;
-
-  // Power bar
-  const BY=TH-18;
-  ctx.fillStyle='rgba(0,0,20,0.9)'; ctx.fillRect(0,BY,TW,18);
-  ctx.strokeStyle='#0f44'; ctx.lineWidth=0.5;
-  ctx.beginPath(); ctx.moveTo(0,BY); ctx.lineTo(TW,BY); ctx.stroke();
-  const slots=['SPD','SPD','MSL','DBL','LASR','OPT','SHLD'];
-  const sw=Math.floor(TW/slots.length);
-  slots.forEach((s,i)=>{
-    ctx.font='4px "Press Start 2P",monospace';
-    ctx.textAlign='center';
-    ctx.fillStyle=i===4?'#0ff':'#334';
-    if(i===4){ctx.fillStyle='rgba(0,200,255,0.2)'; ctx.fillRect(i*sw+1,BY+1,sw-2,16);}
-    ctx.fillStyle=i===4?'#0ff':'#445577';
-    ctx.fillText(s,i*sw+sw/2,BY+11);
-    if(i===4){ctx.strokeStyle='#0cf';ctx.lineWidth=0.8;ctx.strokeRect(i*sw+1,BY+1,sw-2,15);}
+  [[CX-52,144],[CX-72,150],[CX+51,144],[CX+71,150]].forEach(([x,y])=>{
+    ctx.fillStyle='#ff4422'; ctx.fillRect(x,y+2,2,4);
   });
 
-  // Score bar top
-  ctx.fillStyle='rgba(0,0,0,0.7)'; ctx.fillRect(0,0,TW,14);
-  ctx.font='5px "Press Start 2P",monospace'; ctx.fillStyle='#0f8';
-  ctx.textAlign='left'; ctx.fillText('SCORE',4,10);
-  ctx.fillStyle='#fff'; ctx.fillText('012800',50,10);
-  ctx.fillStyle='#0f8'; ctx.textAlign='right'; ctx.fillText('STG 1',TW-4,10);
+  // Cockpit canopy frame
+  ctx.fillStyle='#1a3850';
+  ctx.beginPath(); ctx.ellipse(CX,70,13,24,0,0,Math.PI*2); ctx.fill();
+  // Glass
+  ctx.fillStyle='#002848';
+  ctx.beginPath(); ctx.ellipse(CX,69,11,22,0,0,Math.PI*2); ctx.fill();
+  const cg=ctx.createLinearGradient(CX-11,47,CX+5,91);
+  cg.addColorStop(0,'#0077bb'); cg.addColorStop(0.35,'#004488');
+  cg.addColorStop(0.7,'#002255'); cg.addColorStop(1,'#001030');
+  ctx.fillStyle=cg;
+  ctx.beginPath(); ctx.ellipse(CX-1,70,9,21,0,0,Math.PI*2); ctx.fill();
+  // Glint
+  ctx.fillStyle='rgba(130,210,255,0.75)';
+  ctx.beginPath(); ctx.ellipse(CX-4,55,3,8,-0.25,0,Math.PI*2); ctx.fill();
+  ctx.fillStyle='rgba(200,240,255,0.5)';
+  ctx.beginPath(); ctx.ellipse(CX-5,52,1.5,4,-0.25,0,Math.PI*2); ctx.fill();
+  // Frame lines
+  ctx.strokeStyle='#2a5070'; ctx.lineWidth=1;
+  ctx.beginPath(); ctx.moveTo(CX-10,62); ctx.lineTo(CX+10,62); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(CX-11,72); ctx.lineTo(CX+11,72); ctx.stroke();
+
+  // Nose cone
+  ctx.fillStyle='#88b0cc';
+  ctx.beginPath();
+  ctx.moveTo(CX,30); ctx.lineTo(CX+8,50); ctx.lineTo(CX-8,50);
+  ctx.closePath(); ctx.fill();
+  ctx.fillStyle='#5a8aa8';
+  ctx.beginPath();
+  ctx.moveTo(CX+1,30); ctx.lineTo(CX+8,50); ctx.lineTo(CX+2,50);
+  ctx.closePath(); ctx.fill();
+  ctx.fillStyle='#b0d4e8';
+  ctx.beginPath();
+  ctx.moveTo(CX-1,30); ctx.lineTo(CX-6,49); ctx.lineTo(CX-2,50);
+  ctx.closePath(); ctx.fill();
+  ctx.fillStyle='#ddf0ff'; ctx.fillRect(CX-1,30,2,5);
+
+  // Engine nozzles (7-ring glow)
+  [[CX-10,198],[CX+10,198]].forEach(([ex,ey])=>{
+    ctx.fillStyle='#1a0800'; ctx.beginPath(); ctx.ellipse(ex,ey,7,5,0,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle='#882200'; ctx.beginPath(); ctx.ellipse(ex,ey,6,4,0,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle='#cc4400'; ctx.beginPath(); ctx.ellipse(ex,ey,5,3.2,0,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle='#ff6600'; ctx.beginPath(); ctx.ellipse(ex,ey,4,2.5,0,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle='#ff9900'; ctx.beginPath(); ctx.ellipse(ex,ey,3,2,0,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle='#ffcc44'; ctx.beginPath(); ctx.ellipse(ex,ey,2,1.4,0,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle='#ffffff'; ctx.beginPath(); ctx.ellipse(ex,ey,1,0.8,0,0,Math.PI*2); ctx.fill();
+  });
 
 })();}catch(e){console.warn('thumb-nv',e);}
 
