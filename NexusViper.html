@@ -9,35 +9,53 @@
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
   <style>
     *{margin:0;padding:0;box-sizing:border-box}
-    html,body{width:100%;height:100%;background:#000;overflow:hidden;display:flex;align-items:center;justify-content:center}
-    #wrap{position:relative;display:inline-block;line-height:0}
-    canvas{display:block;image-rendering:pixelated}
+    html,body{width:100%;height:100%;background:#000;overflow:hidden;}
+    #wrap{
+      position:fixed;left:50%;top:50%;
+      transform-origin:center center;
+      display:flex;flex-direction:column;align-items:center;
+    }
+    #frame{
+      position:relative;
+      background:#000;
+      border:2px solid #333;
+      box-shadow:
+        0 0 0 1px #000,
+        0 0 18px #0f88,
+        0 0 40px #0f84,
+        0 0 80px #0f82,
+        inset 0 0 12px #0f81;
+      display:flex;flex-direction:column;
+    }
+    canvas{display:block;image-rendering:pixelated;cursor:none;}
     /* Overlay */
     #overlay{
       position:absolute;inset:0;display:flex;flex-direction:column;
-      align-items:center;justify-content:center;gap:14px;
-      background:rgba(0,0,0,.82);font-family:'Press Start 2P',monospace;color:#fff;
+      align-items:center;justify-content:center;gap:8px;
+      background:rgba(0,0,0,.85);font-family:'Press Start 2P',monospace;color:#fff;
+      padding:12px 16px;
       z-index:10;
     }
     #overlay.hidden{display:none}
-    #overlay-title{font-size:clamp(14px,4vw,26px);color:#0f0;text-shadow:0 0 16px #0f0,0 0 40px #0f0;letter-spacing:4px;text-align:center}
-    #overlay-sub{font-size:clamp(6px,1.8vw,11px);color:#aaa;text-align:center;line-height:2;max-width:340px}
-    #overlay-score{font-size:clamp(8px,2vw,13px);color:#ff0;text-align:center}
-    .hint{font-size:clamp(5px,1.4vw,9px);color:#555;text-align:center;line-height:2}
+    #overlay-title{font-size:13px;color:#0f0;text-shadow:0 0 12px #0f0,0 0 30px #0f0;letter-spacing:3px;text-align:center;margin-bottom:4px;}
+    #overlay-sub{font-size:7px;color:#6af;text-align:center;line-height:1.8;max-width:300px}
+    #overlay-score{font-size:9px;color:#ff0;text-align:center}
+    .hint{font-size:6px;color:#444;text-align:center;line-height:1.8}
     .desktop-hint{}
     .mobile-hint{display:none}
     @media(pointer:coarse){.desktop-hint{display:none}.mobile-hint{display:block}}
     #overlay-btn{
-      margin-top:10px;font-family:'Press Start 2P',monospace;font-size:clamp(8px,2vw,13px);
-      background:#0f0;color:#000;border:none;padding:12px 28px;cursor:pointer;
+      margin-top:8px;font-family:'Press Start 2P',monospace;font-size:10px;
+      background:#0f0;color:#000;border:none;padding:10px 24px;cursor:pointer;
       letter-spacing:2px;
     }
     #overlay-btn:hover{background:#0c0}
     /* Mobile controls */
     #ctrl{
-      position:absolute;bottom:0;left:0;right:0;height:90px;
+      width:100%;
       display:none;align-items:center;justify-content:space-between;
-      padding:0 12px 10px;z-index:9;pointer-events:none;
+      padding:8px 8px 0;
+      gap:6px;
     }
     @media(pointer:coarse){#ctrl{display:flex}}
     .ctrl-left{display:flex;gap:6px;pointer-events:auto}
@@ -55,21 +73,24 @@
 </head>
 <body>
 <div id="wrap">
+  <div id="frame">
   <canvas id="cv"></canvas>
 
   <!-- overlay -->
   <div id="overlay">
     <div id="overlay-title">NEXUS VIPER</div>
-    <div id="overlay-sub" style="color:#0af;font-size:clamp(5px,1.5vw,9px)">
-      ▶ SPEED UP &nbsp;·&nbsp; MISSILE &nbsp;·&nbsp; DOUBLE<br>
-      LASER &nbsp;·&nbsp; OPTION &nbsp;·&nbsp; SHIELD
-    </div>
     <div id="overlay-score"></div>
-    <div class="hint desktop-hint">← → ↑ ↓ 移動 &nbsp;|&nbsp; Z / SPACE 射擊 &nbsp;|&nbsp; X 選擇升級 &nbsp;|&nbsp; P 暫停 &nbsp;|&nbsp; ESC 返回</div>
-    <div class="hint mobile-hint">方向鍵移動 &nbsp;|&nbsp; FIRE 射擊 &nbsp;|&nbsp; SELECT 選升級 &nbsp;|&nbsp; 點畫面暫停</div>
-    <button id="overlay-btn">START</button>
+    <div id="overlay-weapons" style="font-family:'Press Start 2P',monospace;font-size:6px;color:#0af;text-align:center;line-height:2.2;border:1px solid #0af4;padding:6px 12px;">
+      POWER-UP SYSTEM<br>
+      <span style="color:#ff0">CAPSULE</span> → SELECT:<br>
+      SPEED · MISSILE · DOUBLE · LASER · OPTION · SHIELD
+    </div>
+    <div class="hint desktop-hint">← → ↑ ↓ 移動 &nbsp;|&nbsp; Z/SPACE 射擊 &nbsp;|&nbsp; X 選升級<br>P 暫停 &nbsp;|&nbsp; ESC 返回</div>
+    <div class="hint mobile-hint">方向控制移動 &nbsp;|&nbsp; FIRE 射擊<br>SEL 選擇升級 &nbsp;|&nbsp; 點畫面暫停</div>
+    <button id="overlay-btn">▶ START</button>
   </div>
 
+  </div><!-- /frame -->
   <!-- mobile controls -->
   <div id="ctrl">
     <div class="ctrl-left">
@@ -100,9 +121,13 @@ ctx.scale(DPR,DPR);
 
 // Scale wrap to fit screen
 function resize(){
-  const s=Math.min(window.innerWidth/CW, window.innerHeight/CH, 3);
-  document.getElementById('wrap').style.transform=`scale(${s})`;
-  document.getElementById('wrap').style.transformOrigin='center center';
+  const isTouchDevice=window.matchMedia('(pointer:coarse)').matches;
+  const CTRL_H=isTouchDevice?74:0;
+  const TOTAL_H=CH+CTRL_H;
+  const scaleX=window.innerWidth/CW;
+  const scaleY=window.innerHeight/TOTAL_H;
+  const s=Math.min(scaleX,scaleY,1.8);
+  document.getElementById('wrap').style.transform=`translate(-50%,-50%) scale(${s.toFixed(4)})`;
 }
 window.addEventListener('resize',resize); resize();
 
@@ -263,6 +288,12 @@ function onPause(){
   if(paused)stopBGM(); else playBGM();
 }
 
+// ── HUD boundaries ───────────────────────────────────────────
+const HUD_TOP=18;      // top score bar height
+const HUD_BOT=22;      // bottom power-up bar height
+const PLAY_TOP=HUD_TOP;
+const PLAY_BOT=CH-HUD_BOT;
+
 // ── Game state ─────────────────────────────────────────────
 let gameRunning=false, paused=false;
 let score=0, hiScore=0, lives=3, stage=1;
@@ -280,8 +311,9 @@ let shieldActive=false;
 let hasDouble=false, hasLaser=false, hasMissile=false, optionCount=0;
 let laserActive=false, laserTimer=0;
 
-// Options (drones)
-const optionTrail=[]; // stores past player positions for option positioning
+// Options (drones) — ring buffer for trail
+let optionTrail=new Array(300).fill(null).map(()=>({x:0,y:0}));
+let optionTrailHead=0;
 const MAX_TRAIL=300;
 const OPTION_DIST=50; // pixels behind player per option
 
@@ -338,7 +370,8 @@ function initGame(){
   pSpeed=PSPEED_BASE;
   invincible=0; shieldActive=false;
   hasDouble=false; hasLaser=false; hasMissile=false; optionCount=0;
-  optionTrail.length=0;
+  optionTrailHead=0;
+  optionTrail.forEach(p=>{p.x=px||40;p.y=py||CH/2;});
   laserActive=false; laserTimer=0; laserBeam=null;
   powerCursor=0;
   playerBullets=[]; enemyBullets=[]; missiles=[];
@@ -359,6 +392,7 @@ function startGame(){
   hideOverlay();
   initGame();
   gameRunning=true; paused=false;
+  lastTime=performance.now();
   playBGM();
   requestAnimationFrame(loop);
 }
@@ -453,12 +487,15 @@ function spawnEnemy(type,x,y,pattern,idx){
     case 'heavy':  e.hp=4; e.score=500; e.w=22; e.h=16; e.vx=-1.0; break;
     case 'asteroid':e.hp=3; e.score=300; e.w=20; e.h=20; e.vx=-1.8-Math.random(); e.vy=(Math.random()-.5)*1.5; e.rot=0; e.rotSpd=(Math.random()-.5)*0.08; break;
   }
-  if(pattern==='sine') e.sineAmp=40, e.sineFreq=0.03, e.sineOffset=idx*0.5;
+  if(pattern==='sine') e.sineAmp=Math.min(35,(PLAY_BOT-PLAY_TOP)/2-14), e.sineFreq=0.03, e.sineOffset=idx*0.5;
+  // Clamp initial Y to play area
+  e.y=Math.max(PLAY_TOP+e.h, Math.min(PLAY_BOT-e.h, e.y));
+  e.birthY=e.y;
   enemies.push(e);
 }
 
 function spawnAsteroid(){
-  spawnEnemy('asteroid', CW+20, 20+Math.random()*(CH-60), 'free', 0);
+  spawnEnemy('asteroid', CW+20, PLAY_TOP+20+Math.random()*(PLAY_BOT-PLAY_TOP-60), 'free', 0);
 }
 
 function spawnCapsule(x,y){
@@ -501,10 +538,9 @@ function fireMissile(){
 }
 
 function getOptionPos(i){
-  const dist=(i+1)*OPTION_DIST;
-  const idx=Math.min(dist, optionTrail.length-1);
-  if(idx<0)return null;
-  return optionTrail[optionTrail.length-1-idx]||null;
+  const dist=Math.min((i+1)*OPTION_DIST, MAX_TRAIL-1);
+  const idx=(optionTrailHead - dist + MAX_TRAIL*2)%MAX_TRAIL;
+  return optionTrail[idx]||null;
 }
 
 // ── Power-up system ───────────────────────────────────────
@@ -528,58 +564,62 @@ function selectPowerup(){
 
 // ── Update ────────────────────────────────────────────────
 let raf=null;
-function loop(){
+let lastTime=0;
+function loop(ts){
   if(!gameRunning){return;}
   raf=requestAnimationFrame(loop);
-  if(!paused) update();
+  const dt=Math.min((ts-lastTime)/16.667, 2.5); // normalize to 60fps; cap at 2.5x
+  lastTime=ts;
+  if(!paused) update(dt);
   draw();
 }
 
-function update(){
+function update(dt=1){
   // Player movement
-  const spd=pSpeed*(isFire()&&hasLaser?0.9:1);
-  if(isUp()   && py>16)          py-=spd;
-  if(isDown()  && py<CH-pH-32)   py+=spd;
-  if(isLeft()  && px>4)          px-=spd;
-  if(isRight() && px<CW/2-pW)    px+=spd;
+  const spd=pSpeed*(isFire()&&hasLaser?0.9:1)*dt;
+  if(isUp()   && py>PLAY_TOP+2)       py-=spd;
+  if(isDown() && py<PLAY_BOT-pH-2)    py+=spd;
+  if(isLeft() && px>4)                px-=spd;
+  if(isRight()&& px<CW/2-pW)          px+=spd;
 
-  // Option trail
-  optionTrail.push({x:px,y:py});
-  if(optionTrail.length>MAX_TRAIL)optionTrail.shift();
+  // Option trail (ring buffer — no alloc/shift)
+  optionTrailHead=(optionTrailHead+1)%MAX_TRAIL;
+  optionTrail[optionTrailHead].x=px;
+  optionTrail[optionTrailHead].y=py;
 
   // Stars scroll
   stars.forEach(s=>{
-    s.x-=s.spd;
+    s.x-=s.spd*dt;
     if(s.x<0)s.x=CW+2;
   });
 
-  bgScroll=(bgScroll+0.5)%CW;
+  bgScroll=(bgScroll+0.5*dt)%CW;
 
   // Invincibility
-  if(invincible>0)invincible--;
+  if(invincible>0)invincible-=dt;
 
   // Firing
-  if(fireCooldown>0)fireCooldown--;
-  if(isFire()&&fireCooldown===0){
+  if(fireCooldown>0)fireCooldown-=dt;
+  if(isFire()&&fireCooldown<=0){
     fireCooldown=FIRE_RATE;
     firePlayerWeapon();
   }
-  if(missileCooldown>0)missileCooldown--;
+  if(missileCooldown>0)missileCooldown-=dt;
   if(isFire()&&hasMissile&&missileCooldown===0) fireMissile();
 
   // Laser beam
-  if(laserTimer>0)laserTimer--;
+  if(laserTimer>0)laserTimer-=dt;
   else {laserActive=false; laserBeam=null;}
 
   // Player bullets
   playerBullets=playerBullets.filter(b=>{
-    b.x+=b.vx; b.y+=b.vy;
+    b.x+=b.vx*dt; b.y+=b.vy*dt;
     return b.x<CW+10&&b.y>-5&&b.y<CH+5;
   });
 
   // Enemy bullets
   enemyBullets=enemyBullets.filter(b=>{
-    b.x+=b.vx; b.y+=b.vy;
+    b.x+=b.vx*dt; b.y+=b.vy*dt;
     if(b.x<-10||b.y<-10||b.y>CH+10)return false;
     // hit player
     if(!invincible&&!gameOver&&rectsOverlap(b.x,b.y,b.w||4,b.h||4,px+3,py+2,pW-6,pH-4)){
@@ -596,11 +636,11 @@ function update(){
       const dx=m.target.x+m.target.w/2-m.x;
       const dy=m.target.y+m.target.h/2-m.y;
       const d=Math.hypot(dx,dy)||1;
-      m.vx+=(dx/d)*0.3; m.vy+=(dy/d)*0.3;
+      m.vx+=(dx/d)*0.3*dt; m.vy+=(dy/d)*0.3*dt;
       const spd2=Math.hypot(m.vx,m.vy);
       if(spd2>4){m.vx=m.vx/spd2*4;m.vy=m.vy/spd2*4;}
     }
-    m.x+=m.vx; m.y+=m.vy;
+    m.x+=m.vx*dt; m.y+=m.vy*dt;
     if(m.x>CW+10||m.x<-10||m.y<-10||m.y>CH+10)return false;
     // hit enemy
     for(let i=enemies.length-1;i>=0;i--){
@@ -641,7 +681,10 @@ function update(){
     } else if(e.type==='asteroid'){
       e.rot+=e.rotSpd;
     }
-    e.x+=e.vx; e.y+=e.vy;
+    e.x+=e.vx*dt; e.y+=e.vy*dt;
+    // Clamp to playfield (no entering HUD zones)
+    if(e.y<PLAY_TOP){ e.y=PLAY_TOP; if(e.vy<0)e.vy*=-1; }
+    if(e.y+e.h>PLAY_BOT){ e.y=PLAY_BOT-e.h; if(e.vy>0)e.vy*=-1; }
     if(e.x<-30)return false;
 
     // Enemy shoot
@@ -657,7 +700,7 @@ function update(){
 
     // Laser hit
     if(laserBeam&&e.y<py+pH/2+4&&e.y+e.h>py+pH/2-4&&e.x>px){
-      hitEnemy(e,0.5,enemies.indexOf(e));
+      hitEnemy(e,0.5);
     }
 
     // Bullet collision
@@ -665,7 +708,7 @@ function update(){
       const b=playerBullets[i];
       if(rectsOverlap(b.x,b.y,b.w,b.h,e.x,e.y,e.w,e.h)){
         playerBullets.splice(i,1);
-        hitEnemy(e,1,enemies.indexOf(e));
+        hitEnemy(e,1);
         break;
       }
     }
@@ -673,14 +716,14 @@ function update(){
     // Player collision
     if(!invincible&&!gameOver&&rectsOverlap(px+3,py+2,pW-6,pH-4,e.x,e.y,e.w,e.h)){
       if(!shieldActive) playerHit();
-      else { shieldActive=false; hitEnemy(e,e.hp,enemies.indexOf(e)); }
+      else { shieldActive=false; hitEnemy(e,e.hp); }
     }
 
     return e.hp>0;
   });
 
-  // Explosions / particles
-  explosions=explosions.filter(e=>{e.timer--;return e.timer>0;});
+  // Explosions
+  explosions=explosions.filter(e=>{e.timer-=dt;return e.timer>0;});
   particles=particles.filter(p=>{
     p.x+=p.vx; p.y+=p.vy; p.vy+=0.05; p.life--;
     return p.life>0;
@@ -692,7 +735,7 @@ function update(){
 
   // Wave spawning
   if(!bossRef){
-    waveTimer++;
+    waveTimer+=dt;
     if(waveIndex<waves.length&&waveTimer>=waves[waveIndex].delay){
       waves[waveIndex].spawn();
       waveIndex++;
@@ -702,7 +745,7 @@ function update(){
 
   // Stage clear
   if(stageClear){
-    stageClearTimer++;
+    stageClearTimer+=dt;
     if(stageClearTimer>180){
       stage++;
       score+=5000+(lives*1000);
@@ -724,7 +767,7 @@ function updateBoss(e){
   } else {
     // Oscillate
     e.y+=e.vy;
-    if(e.y<20||e.y>CH-e.h-20) e.vy*=-1;
+    if(e.y<PLAY_TOP||e.y>PLAY_BOT-e.h) e.vy*=-1;
   }
 
   // Shooting phases
@@ -806,7 +849,7 @@ function bossDeath(e){
   scorePopups.push({x:CW/2,y:CH/2-20,txt:'STAGE CLEAR!',color:'#0f0',life:300,vy:-0.1,big:true});
 }
 
-function hitEnemy(e,dmg,idx){
+function hitEnemy(e,dmg){
   e.hp-=dmg;
   spawnMiniExp(e.x+e.w/2,e.y+e.h/2);
   sndHit();
@@ -1246,16 +1289,169 @@ function drawPaused(){
 initStars();
 waves=makeWaves(stage);
 
-// Animate title screen stars
+// ── Title screen ────────────────────────────────────────
+const titleEnemies=[
+  {x:260,y:75, spd:0.7,type:'heavy'},
+  {x:230,y:112,spd:0.9,type:'fighter'},
+  {x:210,y:58, spd:0.8,type:'fighter'},
+  {x:285,y:145,spd:0.6,type:'heavy'},
+  {x:255,y:168,spd:0.75,type:'dart'},
+  {x:198,y:142,spd:1.0, type:'dart'},
+];
+let titleFrame=0;
+const shootingStars=[];
+
+function drawTitleEnemy(e){
+  const x=e.x,y=e.y;
+  if(e.type==='dart'){
+    ctx.fillStyle='#ff4444'; ctx.fillRect(x,y+2,12,6); ctx.fillRect(x+2,y,8,10);
+    ctx.fillStyle='#ff8888'; ctx.fillRect(x+10,y+4,3,2);
+  } else if(e.type==='fighter'){
+    ctx.fillStyle='#cc3300'; ctx.fillRect(x,y+4,16,5); ctx.fillRect(x+2,y+1,12,9);
+    ctx.fillStyle='#ff6600'; ctx.fillRect(x+14,y+5,4,2);
+    ctx.fillStyle='#ff0';    ctx.fillRect(x+4,y+4,3,3);
+  } else {
+    ctx.fillStyle='#882200'; ctx.fillRect(x,y+4,20,8); ctx.fillRect(x+2,y,16,16);
+    ctx.fillStyle='#ff4400'; ctx.fillRect(x+16,y+7,5,3);
+    ctx.fillStyle='#ff0';    ctx.fillRect(x+5,y+5,4,5);
+  }
+}
+
 (function titleLoop(){
   if(gameRunning)return;
+  titleFrame++;
   ctx.fillStyle='#000810'; ctx.fillRect(0,0,CW,CH);
+
+  // ── Deep nebula (max 4 radial fills)
+  ctx.save();
+  [{x:70, y:95, r:85, c:'rgba(0,18,70,0.6)'},
+   {x:240,y:155,r:95, c:'rgba(28,0,55,0.55)'},
+   {x:145,y:210,r:75, c:'rgba(0,38,28,0.5)'},
+   {x:38, y:175,r:60, c:'rgba(0,8,45,0.45)'},
+  ].forEach(n=>{
+    const g=ctx.createRadialGradient(n.x,n.y,0,n.x,n.y,n.r);
+    g.addColorStop(0,n.c); g.addColorStop(1,'rgba(0,0,0,0)');
+    ctx.fillStyle=g; ctx.fillRect(0,0,CW,CH);
+  });
+  ctx.restore();
+
+  // ── Stars with twinkle
   stars.forEach(s=>{
-    s.x-=s.spd*0.5;
-    if(s.x<0)s.x=CW;
-    ctx.fillStyle=`rgb(${s.bright},${s.bright},${s.bright})`;
+    s.x-=s.spd*0.3; if(s.x<0)s.x=CW;
+    const b=Math.floor(s.bright*(0.65+0.35*Math.abs(Math.sin(titleFrame*0.04+s.y*0.1))));
+    ctx.fillStyle=`rgb(${b},${b},${Math.min(255,b+25)})`;
     ctx.fillRect(s.x,s.y,s.r,s.r);
   });
+
+  // ── Shooting stars
+  if(Math.random()<0.007) shootingStars.push({x:CW,y:5+Math.random()*55,vx:-5.5-Math.random()*4,vy:1.5+Math.random(),life:38});
+  for(let i=shootingStars.length-1;i>=0;i--){
+    const s=shootingStars[i];
+    s.x+=s.vx; s.y+=s.vy; s.life--;
+    if(s.life<=0){shootingStars.splice(i,1);continue;}
+    ctx.save(); ctx.globalAlpha=s.life/38;
+    ctx.strokeStyle='#cce8ff'; ctx.lineWidth=1;
+    ctx.beginPath(); ctx.moveTo(s.x,s.y); ctx.lineTo(s.x-s.vx*6,s.y-s.vy*6); ctx.stroke();
+    ctx.restore();
+  }
+
+  // ── Large ringed planet (top-right)
+  {
+    ctx.save();
+    const pr=52, pcx=CW-pr+18, pcy=52;
+    // Planet body
+    const pg=ctx.createRadialGradient(pcx-16,pcy-16,2,pcx,pcy,pr);
+    pg.addColorStop(0,'#3a6ecc'); pg.addColorStop(0.55,'#1035aa'); pg.addColorStop(1,'#050820');
+    ctx.fillStyle=pg; ctx.beginPath(); ctx.arc(pcx,pcy,pr,0,Math.PI*2); ctx.fill();
+    // Surface bands
+    ctx.save(); ctx.beginPath(); ctx.arc(pcx,pcy,pr,0,Math.PI*2); ctx.clip();
+    ctx.globalAlpha=0.1;
+    for(const dy of[-16,-6,4,14,24]){
+      ctx.fillStyle='#99bbff'; ctx.fillRect(pcx-pr,pcy+dy,pr*2,6);
+    }
+    ctx.restore();
+    // Atmosphere rim
+    const rim=ctx.createRadialGradient(pcx,pcy,pr-5,pcx,pcy,pr+5);
+    rim.addColorStop(0,'rgba(80,130,255,0)'); rim.addColorStop(1,'rgba(80,170,255,0.3)');
+    ctx.fillStyle=rim; ctx.beginPath(); ctx.arc(pcx,pcy,pr+5,0,Math.PI*2); ctx.fill();
+    // Ring (behind half, then front half)
+    ctx.save(); ctx.globalAlpha=0.28;
+    ctx.strokeStyle='#88aaee'; ctx.lineWidth=5;
+    ctx.beginPath(); ctx.ellipse(pcx,pcy+9,pr+26,11,-0.08,0,Math.PI*2); ctx.stroke();
+    ctx.restore();
+    ctx.restore();
+  }
+
+  // ── Small cratered moon (bottom-left)
+  {
+    ctx.save();
+    const mg=ctx.createRadialGradient(45,196,0,46,198,17);
+    mg.addColorStop(0,'#5a6a7a'); mg.addColorStop(1,'#1a2030');
+    ctx.fillStyle=mg; ctx.beginPath(); ctx.arc(47,198,17,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle='rgba(0,0,0,0.4)';
+    ctx.beginPath(); ctx.arc(43,194,5,0,Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(53,203,3.5,0,Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(40,204,2.5,0,Math.PI*2); ctx.fill();
+    ctx.restore();
+  }
+
+  // ── Distant star cluster
+  {
+    ctx.save(); ctx.globalAlpha=0.4;
+    for(let i=0;i<12;i++){
+      const sx=140+Math.cos(i*0.9)*30, sy=40+Math.sin(i*1.1)*18;
+      const bri=150+Math.floor(Math.sin(titleFrame*0.06+i)*40);
+      ctx.fillStyle=`rgb(${bri},${bri},${Math.min(255,bri+40)})`;
+      ctx.fillRect(sx,sy,i%3===0?2:1,i%3===0?2:1);
+    }
+    ctx.restore();
+  }
+
+  // ── Enemy formation (flies in from right)
+  titleEnemies.forEach(e=>{
+    e.x-=e.spd*(0.75+0.25*Math.sin(titleFrame*0.012));
+    if(e.x<-30){e.x=CW+10+Math.random()*50; e.y=PLAY_TOP+14+Math.random()*(PLAY_BOT-PLAY_TOP-36);}
+    ctx.save(); ctx.globalAlpha=0.78;
+    // engine trail
+    ctx.fillStyle='rgba(255,110,20,0.4)';
+    ctx.fillRect(e.x-(6+Math.floor(Math.random()*7)),e.y+(e.type==='dart'?5:e.type==='fighter'?6:8),7,3);
+    drawTitleEnemy(e);
+    ctx.restore();
+  });
+
+  // ── Player ship (hero, hovering left-center)
+  {
+    const hx=28, hy=Math.round(CH/2-6+Math.sin(titleFrame*0.05)*4);
+    // Exhaust glow
+    ctx.save();
+    const exLen=8+Math.floor(Math.random()*8);
+    ctx.fillStyle='rgba(255,140,30,0.5)'; ctx.fillRect(hx-exLen,hy+4,exLen,4);
+    ctx.fillStyle='rgba(255,220,80,0.65)'; ctx.fillRect(hx-Math.floor(exLen*0.5),hy+5,Math.floor(exLen*0.5),2);
+    ctx.restore();
+    // Laser beam
+    ctx.save(); ctx.globalAlpha=0.35+0.2*Math.sin(titleFrame*0.12);
+    const lg=ctx.createLinearGradient(hx+24,0,CW-30,0);
+    lg.addColorStop(0,'#0ff'); lg.addColorStop(1,'rgba(0,255,255,0)');
+    ctx.strokeStyle=lg; ctx.lineWidth=2;
+    ctx.shadowColor='#0ff'; ctx.shadowBlur=7;
+    ctx.beginPath(); ctx.moveTo(hx+24,hy+6); ctx.lineTo(CW-30,hy+6); ctx.stroke();
+    ctx.restore();
+    // Ship
+    ctx.fillStyle='#88ccff';
+    ctx.fillRect(hx+6,hy+4,14,4); ctx.fillRect(hx+4,hy+3,18,6);
+    ctx.fillStyle='#fff';    ctx.fillRect(hx+20,hy+5,4,2);
+    ctx.fillStyle='#0cf';    ctx.fillRect(hx+12,hy+4,6,4);
+    ctx.fillStyle='#6699cc'; ctx.fillRect(hx+4,hy+1,8,3); ctx.fillRect(hx+4,hy+8,8,3);
+    ctx.fillStyle='#ff8800'; ctx.shadowColor='#ff8800'; ctx.shadowBlur=5;
+    ctx.fillRect(hx,hy+4,3,4); ctx.shadowBlur=0;
+    // Option drone
+    const ox=hx-18, oy=hy+6+Math.round(Math.sin(titleFrame*0.08+1)*5);
+    ctx.fillStyle='#ff8c00'; ctx.shadowColor='#ffa500'; ctx.shadowBlur=5;
+    ctx.beginPath(); ctx.arc(ox,oy,5,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle='#ffcc00'; ctx.beginPath(); ctx.arc(ox,oy,3,0,Math.PI*2); ctx.fill();
+    ctx.shadowBlur=0;
+  }
+
   if(!gameRunning)requestAnimationFrame(titleLoop);
 })();
 
