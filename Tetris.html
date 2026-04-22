@@ -1045,15 +1045,17 @@ setTimeout(resizeGame,0);
   function hold(id,key){
     const el=document.getElementById(id);
     if(!el)return;
-    let iv=null;
+    let iv=null, delay=null;
     let touched=false;
     function dn(e){
       if(e.type==='mousedown'&&touched){e.preventDefault();return;} // suppress ghost click
       touched=(e.type==='touchstart');
       fireDbc(key,'keydown'); e.preventDefault();
-      iv=setInterval(()=>fire(key,'keydown'),80);
+      // Initial delay before auto-repeat (mirroring DAS feel)
+      delay=setTimeout(()=>{ iv=setInterval(()=>fire(key,'keydown'),110); },220);
     }
     function up(e){
+      clearTimeout(delay); delay=null;
       clearInterval(iv); iv=null;
       fire(key,'keyup'); e.preventDefault();
     }
