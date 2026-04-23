@@ -359,9 +359,10 @@ const bCv=document.getElementById('board'), bCtx=bCv.getContext('2d');
 const nCv=document.getElementById('next-cv'), nCtx=nCv.getContext('2d');
 
 /* ── 遊戲狀態 ──────────────────────────────────────── */
-let board,piece,nxt,score,level,lines,stats;
+let board,piece,nxt,score,level,lines,stats,hiScore=0;
 let dropT=0,dropSpd=800,lastTs=0,animId=0;
 let running=false,paused=false,muted=false;
+try{hiScore=parseInt(localStorage.getItem('tet_hi'))||0;}catch(e){}
 let clearing=false,clearingRows=[];
 
 /* ================================================================
@@ -839,10 +840,12 @@ function startGame(){
 function endGame(){
   running=false; cancelAnimationFrame(animId);
   stopMusic(); sfx('over'); render();
+  if(score>hiScore){hiScore=score;try{localStorage.setItem('tet_hi',hiScore);}catch(e){}}
   const ov=document.getElementById('overlay');
   ov.innerHTML=`
     <h1 style="color:#f33;font-size:16px;letter-spacing:4px">GAME OVER</h1>
     <div class="sub">SCORE<br><span class="hi" style="font-size:16px">${pad(score,6)}</span></div>
+    <div class="sub">BEST &nbsp;<span style="color:#ff0">${pad(hiScore,6)}</span></div>
     <div class="sub">LEVEL ${pad(level,2)} &nbsp; LINES ${pad(lines,3)}</div>
     <button class="gbtn" id="start-btn">▶ PLAY AGAIN</button>
     <div class="sub key-sub" style="font-size:6px;color:#555;margin-top:-6px">或按任意鍵重新開始</div>

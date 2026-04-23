@@ -273,6 +273,8 @@ let bullet;         // { x,y,vx,vy,color,active } | null
 let nextColor;      // upcoming bubble color
 let cannonAngle = -Math.PI / 2;
 let score, lives, lv;
+let hiScore = 0;
+try{hiScore=parseInt(localStorage.getItem('pb_hi'))||0;}catch(e){}
 let drops = [];     // falling bubble animations
 let pops  = [];     // pop particles
 let flashMsg = '';
@@ -480,6 +482,7 @@ function loseLife() {
   bullet = null;
   if (lives <= 0) {
     bgm.stop();
+    if(score>hiScore){hiScore=score;try{localStorage.setItem('pb_hi',hiScore);}catch(e){}}
     STATE = 'gameover'; transTimer = 3000;
     sfx.gameover();
   } else {
@@ -832,8 +835,11 @@ function drawGameOverScreen() {
   ctx.shadowBlur = 0;
   ctx.fillStyle = '#aaa';
   ctx.font = '8px "Press Start 2P",monospace';
-  ctx.fillText('SCORE: ' + score, W/2, 180);
-  ctx.fillText('LEVEL: ' + lv, W/2, 202);
+  ctx.fillText('SCORE: ' + score, W/2, 175);
+  ctx.fillStyle = '#ff0';
+  ctx.fillText('BEST:  ' + hiScore, W/2, 195);
+  ctx.fillStyle = '#aaa';
+  ctx.fillText('LEVEL: ' + lv, W/2, 215);
   if (Math.floor(Date.now()/600)%2===0) {
     ctx.fillStyle = '#fff';
     ctx.font = '7px "Press Start 2P",monospace';

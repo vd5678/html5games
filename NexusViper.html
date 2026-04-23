@@ -449,6 +449,7 @@ const PLAY_BOT=CH-HUD_BOT;
 // ── Game state ─────────────────────────────────────────────
 let gameRunning=false, paused=false;
 let score=0, hiScore=0, lives=3, stage=1;
+try{hiScore=parseInt(localStorage.getItem('nv_hi'))||0;}catch(e){}
 let gameOver=false;
 let retryCountTimer=null;
 
@@ -1299,7 +1300,7 @@ function playerHit(){
     gameRunning=false;
     stopBGM();
     sndDeath();
-    if(score>hiScore)hiScore=score;
+    if(score>hiScore){hiScore=score;try{localStorage.setItem('nv_hi',hiScore);}catch(e){}}
     setTimeout(()=>{
       // Game Over: full dark overlay, hide weapons box
       overlay.style.background='rgba(0,0,0,0.92)';

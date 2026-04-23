@@ -143,6 +143,7 @@ const NAMES = ['RED','YELLOW','BLUE'];
 let STATE = 'TITLE'; // TITLE | OPENING | PLAYING | PAUSE | LEVELCLEAR | GAMEOVER
 let gameLevel = 1;   // selected on title / current in game
 let score = 0, hiScore = 0;
+try{hiScore=parseInt(localStorage.getItem('drpill_hi'))||0;}catch(e){}
 let virusLeft = 0;
 let board = [];      // ROWS×COLS: null | { type:'virus'|'cap', color:0-2, paired:[r,c]|null }
 let cap = null;      // { r, c, colors:[c0,c1], orient:0(H)|1(V) }
@@ -469,7 +470,7 @@ function finishClear() {
   const lineBonus = clearCells.length >= 8 ? 2 : 1;
   score += (clearCells.length * 100 + virusCleared * 800) * lineBonus;
   virusLeft -= virusCleared;
-  if (score > hiScore) hiScore = score;
+  if (score > hiScore) { hiScore = score; try{localStorage.setItem('drpill_hi',hiScore);}catch(e){} }
   clearCells = [];
   clearing = false;
 

@@ -355,6 +355,7 @@ const LEVELS = [
 // ─── Game State ──────────────────────────────────────────
 let STATE = 'TITLE'; // TITLE | PLAYING | PAUSED | CLEAR | DEAD | GAMEOVER
 let score = 0, hiScore = 0, level = 1, lives = 3;
+try{hiScore=parseInt(localStorage.getItem('ark_hi'))||0;}catch(e){}
 let bricks = [];
 let balls = [];
 let pad = { x: 88, w: 28, laser: false, catch: false, enlarged: false };
@@ -701,7 +702,7 @@ function loseLife() {
   if (lives <= 0) {
     STATE = 'GAMEOVER';
     sndGameOver();
-    if (score > hiScore) hiScore = score;
+    if (score > hiScore) { hiScore = score; try{localStorage.setItem('ark_hi',hiScore);}catch(e){} }
   } else {
     STATE = 'DEAD';
     deadTimer = 1800;
@@ -709,7 +710,7 @@ function loseLife() {
 }
 
 function nextLevel() {
-  if (score > hiScore) hiScore = score;
+  if (score > hiScore) { hiScore = score; try{localStorage.setItem('ark_hi',hiScore);}catch(e){} }
   level++;
   if (level > LEVELS.length) level = LEVELS.length;
   updateHUD();
