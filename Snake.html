@@ -108,6 +108,7 @@
 </div>
 
 <script>
+try{localStorage.setItem('lastPlayed','Snake.html');}catch(e){}
 const canvas = document.getElementById('canvas');
 const ctx    = canvas.getContext('2d');
 const W = canvas.width, H = canvas.height;

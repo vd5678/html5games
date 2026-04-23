@@ -1086,5 +1086,25 @@ try{(function(){
 
 }); // document.fonts.ready
 </script>
+<script>
+// ── Last-played card → top ────────────────────────────────
+(function(){
+  try{
+    const last=localStorage.getItem('lastPlayed');
+    if(!last)return;
+    const grid=document.querySelector('.grid');
+    const card=grid.querySelector('a.card[href="'+last+'"]');
+    if(!card)return;
+    grid.insertBefore(card,grid.firstElementChild);
+    // subtle highlight: pulsing outline
+    card.style.setProperty('box-shadow','0 0 0 2px var(--accent), 0 0 18px var(--accent-glow)','important');
+    const badge=document.createElement('div');
+    badge.textContent='▶ 上次遊玩';
+    badge.style.cssText='position:absolute;top:6px;right:7px;font-family:"Press Start 2P",monospace;font-size:6px;color:#fff;background:rgba(0,0,0,0.72);padding:2px 5px;border-radius:3px;pointer-events:none;z-index:10;';
+    card.style.position='relative';
+    card.appendChild(badge);
+  }catch(e){}
+})();
+</script>
 </body>
 </html>
