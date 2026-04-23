@@ -1253,7 +1253,9 @@ if(loadPet()){
   applyOffline();
   if(pet) pet.lastTs=Date.now();
 }else{
-  pet=null;
+  // 直接從蛋開始，不需要按 B
+  pet=newPet();
+  save();
 }
 renderIcons();
 render();
