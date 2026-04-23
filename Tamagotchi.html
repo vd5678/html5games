@@ -8,7 +8,7 @@
 <style>
 *{margin:0;padding:0;box-sizing:border-box;}
 body{
-  background:#111;
+  background:linear-gradient(160deg,#ffe0f0 0%,#f0d0ff 100%);
   display:flex;
   flex-direction:column;
   align-items:center;
@@ -20,19 +20,19 @@ body{
   overflow:hidden;
 }
 
-/* ── 外殼：蛋形 ── */
+/* ?�?� 外殼：�?�??�?� */
 #shell{
   position:relative;
   width:230px;
   height:290px;
-  background:radial-gradient(ellipse at 40% 35%, #f5d96a 0%, #e8c030 55%, #c4960a 100%);
+  background:radial-gradient(ellipse at 38% 32%, #ffe8f4 0%, #ffb6d9 50%, #f07ab0 100%);
   border-radius: 50% 50% 50% 50% / 42% 42% 58% 58%;
   box-shadow:
-    inset -6px -8px 16px rgba(0,0,0,0.25),
-    inset 4px 4px 10px rgba(255,255,200,0.4),
-    0 0 0 4px #b89020,
-    0 8px 0 3px #8a6c10,
-    0 10px 30px rgba(0,0,0,0.7);
+    inset -6px -8px 16px rgba(200,60,120,0.18),
+    inset 4px 4px 12px rgba(255,255,255,0.55),
+    0 0 0 4px #e8709a,
+    0 8px 0 3px #c04878,
+    0 10px 30px rgba(180,60,120,0.35);
   display:flex;
   flex-direction:column;
   align-items:center;
@@ -40,7 +40,7 @@ body{
   gap:10px;
 }
 
-/* ── 警示燈 ── */
+/* ?�?� 警示???�?� */
 #alert-row{
   display:flex;
   width:190px;
@@ -55,32 +55,32 @@ body{
   transition:background 0.15s, box-shadow 0.15s;
 }
 #alert-light.on{
-  background:#ff3333;
-  box-shadow:0 0 10px #ff3333, 0 0 20px #ff000055;
+  background:#ff6eb4;
+  box-shadow:0 0 10px #ff6eb4, 0 0 20px #ff69b455;
 }
 
-/* ── 螢幕外框 ── */
+/* ?�?� ?��?外�? ?�?� */
 #screen-frame{
   width:190px;height:170px;
-  background:#1a1a0e;
-  border-radius:10px;
-  border:5px solid #a07010;
+  background:#2a1a2e;
+  border-radius:14px;
+  border:5px solid #d070a0;
   box-shadow:
-    inset 0 3px 10px rgba(0,0,0,0.8),
-    0 2px 6px rgba(255,220,60,0.2);
+    inset 0 3px 10px rgba(0,0,0,0.6),
+    0 2px 8px rgba(255,150,200,0.3);
   display:flex;
   align-items:center;
   justify-content:center;
 }
 #screen{
   width:168px;height:152px;
-  background:#8fa85a;
+  background:#fde8f0;
   image-rendering:pixelated;
   display:block;
-  border-radius:4px;
+  border-radius:6px;
 }
 
-/* ── 狀態列 ── */
+/* ?�?� ?�?��? ?�?� */
 #status-bar{
   display:flex;
   width:190px;
@@ -95,18 +95,18 @@ body{
 }
 .stat-label{
   font-size:5px;
-  color:#6a4a08;
+  color:#b04070;
   letter-spacing:1px;
 }
 .hearts{display:flex;gap:2px;}
 .heart{
   width:9px;height:9px;
-  background:#c0392b;
+  background:#ff6eb4;
   clip-path:polygon(50% 90%,0% 35%,15% 0%,50% 20%,85% 0%,100% 35%);
 }
-.heart.empty{background:#c0a060;opacity:0.5;}
+.heart.empty{background:#f0c0d8;opacity:0.6;}
 
-/* ── 選單 icon 列 ── */
+/* ?�?� ?�單 icon ???�?� */
 #menu-row{
   display:flex;
   gap:4px;
@@ -115,29 +115,29 @@ body{
 }
 .menu-icon{
   width:23px;height:23px;
-  border-radius:5px;
-  background:#c8a030;
-  border:2px solid #9a7010;
+  border-radius:8px;
+  background:#ffcce8;
+  border:2px solid #e890c0;
   display:flex;align-items:center;justify-content:center;
-  font-size:11px;
+  font-size:12px;
   cursor:pointer;
   position:relative;
   transition:transform 0.08s;
-  box-shadow:0 2px 0 #7a5808;
+  box-shadow:0 2px 0 #c060a0;
 }
 .menu-icon:active{transform:translateY(2px);box-shadow:none;}
 .menu-icon.selected{
-  background:#fffde8;
-  border-color:#c0392b;
-  box-shadow:0 0 0 1px #c0392b, 0 2px 0 #7a5808;
+  background:#fff0f8;
+  border-color:#ff6eb4;
+  box-shadow:0 0 0 1px #ff6eb4, 0 2px 0 #c060a0;
 }
 .menu-icon.selected::after{
   content:'';
   position:absolute;bottom:-9px;left:50%;transform:translateX(-50%);
-  border:4px solid transparent;border-top-color:#c0392b;
+  border:4px solid transparent;border-top-color:#ff6eb4;
 }
 
-/* ── 三顆按鈕 ── */
+/* ?�?� 三�??��? ?�?� */
 #btn-row{
   display:flex;
   gap:16px;
@@ -154,31 +154,31 @@ body{
   font-size:7px;
 }
 .btn:active{transform:translateY(3px);}
-#btn-a{width:34px;height:34px;background:#c0392b;box-shadow:0 5px 0 #7a1a0a;}
-#btn-a:active{box-shadow:0 2px 0 #7a1a0a;}
-#btn-b{width:42px;height:42px;background:#2471a3;font-size:8px;box-shadow:0 5px 0 #12496a;}
-#btn-b:active{box-shadow:0 2px 0 #12496a;}
-#btn-c{width:34px;height:34px;background:#1e8449;box-shadow:0 5px 0 #0e4a24;}
-#btn-c:active{box-shadow:0 2px 0 #0e4a24;}
+#btn-a{width:34px;height:34px;background:#ff8ec8;box-shadow:0 5px 0 #c0508a;}
+#btn-a:active{box-shadow:0 2px 0 #c0508a;}
+#btn-b{width:42px;height:42px;background:#c878e8;font-size:8px;box-shadow:0 5px 0 #8840b0;}
+#btn-b:active{box-shadow:0 2px 0 #8840b0;}
+#btn-c{width:34px;height:34px;background:#80d8f0;box-shadow:0 5px 0 #3898b8;}
+#btn-c:active{box-shadow:0 2px 0 #3898b8;}
 
-/* ── 底列 ── */
+/* ?�?� 底�? ?�?� */
 #bottom-row{
   display:flex;gap:6px;align-items:center;
   margin-top:0;
 }
 .small-btn{
   font-size:5px;padding:3px 5px;
-  background:#c8a030;border:2px solid #9a7010;border-radius:4px;
-  color:#4a2e00;cursor:pointer;
+  background:#ffcce8;border:2px solid #e890c0;border-radius:6px;
+  color:#a04070;cursor:pointer;
   font-family:'Press Start 2P',monospace;
-  box-shadow:0 2px 0 #7a5808;
+  box-shadow:0 2px 0 #c060a0;
 }
 .small-btn:active{transform:translateY(2px);box-shadow:none;}
-.small-btn.active{background:#c0392b;color:#fff;border-color:#7a1a0a;}
+.small-btn.active{background:#ff6eb4;color:#fff;border-color:#c0408a;}
 
-/* ── 鍵盤 hint ── */
+/* ?�?� ?�盤 hint ?�?� */
 #keyhint{
-  font-size:5px;color:#555;
+  font-size:5px;color:#c080a8;
   margin-top:8px;text-align:center;
   line-height:2;
   font-family:'Press Start 2P',monospace;
@@ -208,13 +208,13 @@ body{
   </div>
 
   <div id="menu-row">
-    <div class="menu-icon" data-idx="0" title="餵食">🍙</div>
-    <div class="menu-icon" data-idx="1" title="電燈">💡</div>
-    <div class="menu-icon" data-idx="2" title="遊玩">🎮</div>
-    <div class="menu-icon" data-idx="3" title="藥">💊</div>
-    <div class="menu-icon" data-idx="4" title="廁所">🚿</div>
-    <div class="menu-icon" data-idx="5" title="狀態">📊</div>
-    <div class="menu-icon" data-idx="6" title="紀律">📣</div>
+    <div class="menu-icon" data-idx="0" title="餵�?">�?/div>
+    <div class="menu-icon" data-idx="1" title="?��?">??</div>
+    <div class="menu-icon" data-idx="2" title="?�玩">??</div>
+    <div class="menu-icon" data-idx="3" title="??>??</div>
+    <div class="menu-icon" data-idx="4" title="廁�?">??</div>
+    <div class="menu-icon" data-idx="5" title="?�??>??</div>
+    <div class="menu-icon" data-idx="6" title="紀�?>??</div>
   </div>
 
   <div id="btn-row">
@@ -224,226 +224,233 @@ body{
   </div>
 
   <div id="bottom-row">
-    <button class="small-btn" id="btn-mute">🔇</button>
-    <button class="small-btn" id="btn-fast">×60</button>
+    <button class="small-btn" id="btn-mute">??</button>
+    <button class="small-btn" id="btn-fast">?60</button>
   </div>
 </div>
 
-<div id="keyhint">A/← &nbsp; B/ENTER &nbsp; C/→ &nbsp;&nbsp;&nbsp; A+C=RESET</div>
+<div id="keyhint">A/??&nbsp; B/ENTER &nbsp; C/??&nbsp;&nbsp;&nbsp; A+C=RESET</div>
 
 <script>
 'use strict';
-// ════════════════════════════════════════════════════════
-//  TAMAGOTCHI  HTML5  —  v2
-// ════════════════════════════════════════════════════════
+// ?��??��??��??��??��??��??��??��??��??��??��??��??��??��??��??��??��??��??��??��??��??��??��??��??��??��??��??��?
+//  TAMAGOTCHI  HTML5  ?? v2
+// ?��??��??��??��??��??��??��??��??��??��??��??��??��??��??��??��??��??��??��??��??��??��??��??��??��??��??��??��?
 const cv  = document.getElementById('screen');
 const ctx = cv.getContext('2d');
 const W = 168, H = 152;
 
-// ── 時間參數 ──────────────────────────────────────────
+// ?�?� ?��??�數 ?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�
 let FAST_MODE = false;
 const TICK_MS = 1000;
-// 每 tick 推進的遊戲分鐘數
+// �?tick ?�進�??�戲?��???
 const mpt = () => FAST_MODE ? 1 : (1/60);
 
-const HUNGER_DECAY  = 240;   // 遊戲分鐘/格
+const HUNGER_DECAY  = 240;   // ?�戲?��?/??
 const HAPPY_DECAY   = 240;
-const POOP_INTERVAL = 90;    // 每 90 min 觸發便便警告
-const POOP_WARN_TTL = 5;     // 警告 5 min 後真正排便
+const POOP_INTERVAL = 90;    // �?90 min 觸發便便警�?
+const POOP_WARN_TTL = 5;     // 警�? 5 min 後�?�??�?
 const OFFLINE_GRACE = 8*60*60*1000;
 
 const SLEEP_START = 23, SLEEP_END = 7;
 const CARE_MISS_MAX = 3;
 
-// ── 精靈顏色 ────────────────────────────────────────
-// 0=透明  1=深色  2=中色  3=淡色  4=白
-const PAL = ['','#1a1a1a','#666666','#bbbbbb','#ffffff'];
-// LCD 背景（亮/暗）
-const LCD_LIGHT = '#8fa85a';
-const LCD_DARK  = '#2a3020';
+// ?�?� ?�種�??�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�
+const EGG_TYPES = [
+  { name:'SWEET',  desc:'GENTLE',    fill:'#ffe8f4', stroke:'#e87ab0', deco:'none'  },
+  { name:'STAR',   desc:'CHEERFUL',  fill:'#fff0c0', stroke:'#e8a020', deco:'stars' },
+  { name:'SKY',    desc:'PLAYFUL',   fill:'#d0eeff', stroke:'#60a8e0', deco:'spots' },
+];
 
-// ── 精靈（14列×14欄）────────────────────────────────
+// ?�?� 精�?顏色 ?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�
+// 0=?��?  1=深色  2=中色  3=淡色  4=??
+const PAL = ['','#8b3060','#d4689a','#f0b0d0','#ffffff'];
+// LCD ?�景（亮/?��?
+const LCD_LIGHT = '#fde8f0';
+const LCD_DARK  = '#4a2038';
+
+// ?�?� 精�?�?4?��?4欄�??�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�
 const SP = {
-  // 蛋
+  // ?��??��?粉�?
   egg:[
     '00001111110000',
-    '00111111111100',
-    '01111111111110',
-    '01113111311110',
-    '11131111111111',
-    '11111111111111',
-    '11111221111111',
-    '11112221111111',
-    '11111221111111',
-    '11111111111111',
-    '01111111111110',
-    '01111111111110',
-    '00111111111100',
-    '00001111110000',
+    '00134444431100',
+    '01344444443110',
+    '13444444444311',
+    '13444444444311',
+    '13444444444311',
+    '13443344444311',
+    '13433344444311',
+    '13444444444311',
+    '13444444444311',
+    '01344444443110',
+    '01134444431100',
+    '00011111110000',
+    '00000000000000',
   ],
-  // Baby：Marutchi（圓球）
+  // Baby：�??��?，大?��?
   baby:[
     '00001111110000',
-    '00111111111100',
-    '01121111121110',
-    '01111111111110',
-    '01114441111110',
-    '01114441111110',
-    '01111111111110',
-    '01111331111110',
-    '00011111111000',
-    '00001111110000',
-    '00001100110000',
-    '00011110111000',
-    '00011000011000',
+    '00122222221100',
+    '01222222222110',
+    '01221221122110',
+    '01221221122110',
+    '01222222222110',
+    '01223212322110',
+    '01222222222110',
+    '00112222211100',
+    '00001221000000',
+    '00001221000000',
+    '00001010000000',
+    '00000000000000',
     '00000000000000',
   ],
-  // Child good：Tamatchi
+  // Child good：�??��?�?
   child_good:[
-    '00001111110000',
-    '00111121111100',
-    '01121111121110',
-    '01111111111110',
-    '01114441111110',
-    '01114441111110',
-    '01111111111110',
-    '00011111111000',
-    '00111111111100',
-    '01110110011110',
-    '01110110011110',
-    '01110000011110',
-    '00110000001100',
+    '01100000001100',
+    '11210000012110',
+    '01222222222110',
+    '01221221122110',
+    '01221221122110',
+    '01222222222110',
+    '01223212322110',
+    '01222222222110',
+    '00112222211100',
+    '00011222110000',
+    '00011022110000',
+    '00001010100000',
+    '00000000000000',
     '00000000000000',
   ],
-  // Child bad：懶散眼
+  // Child bad：無精�???
   child_bad:[
     '00001111110000',
-    '00111111111100',
-    '01121211121110',
-    '01112121111110',
-    '01111111111110',
-    '01114441111110',
-    '01114441111110',
-    '01111111111110',
-    '00110111101100',
-    '01111111111110',
-    '01111111111110',
-    '00111100011100',
-    '00011000011000',
+    '00122222221100',
+    '01222222222110',
+    '01221122211110',
+    '01222222221110',
+    '01222222222110',
+    '01222112222110',
+    '01222222222110',
+    '00112222211100',
+    '00011222110000',
+    '00011022110000',
+    '00001010100000',
+    '00000000000000',
     '00000000000000',
   ],
-  // Teen good：精神小夥
+  // Teen good：�??��?�?
   teen_good:[
-    '00001111110000',
-    '00112211221100',
-    '01121211121110',
-    '01111111111110',
-    '01114441111110',
-    '01114441111110',
-    '01111111111110',
-    '00011111111000',
-    '00011111111000',
-    '00111111111100',
-    '01110110011110',
-    '01110110011110',
     '00100000000100',
+    '01230000003210',
+    '00122222221100',
+    '01222222222110',
+    '01221221122110',
+    '01221221122110',
+    '01222222222110',
+    '01222212222110',
+    '00112222211100',
+    '00011222110000',
+    '00011022110000',
+    '00001010100000',
+    '00000000000000',
     '00000000000000',
   ],
-  // Teen bad：皺眉壯漢
+  // Teen bad：刺?�頭不�?�?
   teen_bad:[
-    '00001111110000',
-    '00112211221100',
-    '01121211121110',
-    '01111111111110',
-    '01114441111110',
-    '01122111122110',
-    '01122111122110',
-    '01111111111110',
-    '00111111111000',
-    '01111111111100',
-    '01111110111110',
-    '01100000001110',
-    '01100000001100',
+    '01001010010000',
+    '11101010101100',
+    '01222222222110',
+    '01222222222110',
+    '01221122211110',
+    '01222222221110',
+    '01222112222110',
+    '01222222222110',
+    '00112222211100',
+    '00011222110000',
+    '00011022110000',
+    '00001010100000',
+    '00000000000000',
     '00000000000000',
   ],
-  // Adult good：Mametchi（豆豆雞，大耳）
+  // Adult good：花?�頭飾、大�?
   adult_good:[
-    '11000001111001',
-    '11100011111111',
-    '01111111111110',
-    '01121211121110',
-    '01111111111110',
-    '01114441111110',
-    '01114441111110',
-    '01111111111110',
-    '00011111111000',
-    '00111111111100',
-    '01110110011110',
-    '01110110011110',
-    '01100000001100',
-    '00000000000000',
+    '00001310000000',
+    '00013131300000',
+    '00131313130000',
+    '00001310000000',
+    '00122222221100',
+    '01222222222110',
+    '01221221122110',
+    '01221221122110',
+    '01222222222110',
+    '01223212322110',
+    '00112222211100',
+    '00011222110000',
+    '00011022110000',
+    '00001010100000',
   ],
-  // Adult bad：Tarakotchi（矮胖陰沉）
+  // Adult bad：�??�、�??��?
   adult_bad:[
-    '00000000000000',
     '00001111110000',
-    '00111111111100',
-    '01121111121110',
-    '11111111111111',
-    '11114441111111',
-    '11114441111111',
-    '11111111111111',
-    '01111111111110',
-    '01110110011110',
-    '01110110011110',
-    '01110000011110',
-    '00110000001100',
+    '00122222221100',
+    '01222222222110',
+    '01222112211110',
+    '01222112211110',
+    '01222222222110',
+    '01222222222110',
+    '01222112222110',
+    '00222222222200',
+    '00012222100000',
+    '00011222110000',
+    '00011022110000',
+    '00001010100000',
     '00000000000000',
   ],
-  // Senior good：Mimitchi（兔耳老爺爺）
+  // Senior good：�??�蝶結、�??��?
   senior_good:[
-    '00100000000100',
-    '01100000000110',
-    '01111111111110',
-    '01121111121110',
-    '01111111111110',
-    '01114441111110',
-    '01114441111110',
-    '01111111111110',
-    '00011111111000',
-    '00111001001100',
-    '01100001001110',
-    '01100000001100',
-    '00110000001100',
+    '00001310100000',
+    '00001111110000',
+    '00122222221100',
+    '01222222222110',
+    '01221221122110',
+    '01223323332110',
+    '01222222222110',
+    '01223212322110',
+    '00122222221100',
+    '00012222100000',
+    '00001221100000',
+    '00001010100000',
+    '00000000000000',
     '00000000000000',
   ],
-  // Senior bad：Zatchi（霸道老頭）
+  // Senior bad：疲?�、耷�???
   senior_bad:[
-    '11100000000111',
-    '11111111111111',
-    '01121111121110',
-    '01111111111110',
-    '01114441111110',
-    '01122111122110',
-    '01111111111110',
-    '01111111111110',
-    '00011111111000',
-    '00111001001100',
-    '01100001001110',
-    '01100000001100',
-    '00100000000100',
+    '00001111110000',
+    '00122222221100',
+    '01222222222110',
+    '01222222222110',
+    '01221122211110',
+    '01222222221110',
+    '01222222222110',
+    '01221212122110',
+    '00122222221100',
+    '00012222100000',
+    '00001221100000',
+    '00001010100000',
+    '00000000000000',
     '00000000000000',
   ],
-  // 骷髏頭（死亡）
+  // 骷�??��?死亡�?
   skull:[
     '00001111110000',
-    '00111111111100',
-    '01144411144110',
-    '01144411144110',
-    '01111111111110',
-    '01111331111110',
-    '01112111211110',
-    '01111111111110',
+    '00122222221100',
+    '01244422244110',
+    '01241111442110',
+    '01244422244110',
+    '01222222222110',
+    '01221222122110',
+    '01222222222110',
     '00011001001000',
     '00011011011000',
     '00011001001000',
@@ -451,33 +458,33 @@ const SP = {
     '00000000000000',
     '00000000000000',
   ],
-  // 天使
+  // 天使：�?心�???
   angel:[
-    '00000111100000',
-    '00004444400000',
-    '00001111100000',
-    '00111111111100',
-    '01121211121110',
-    '01111111111110',
-    '01114441111110',
-    '01111111111110',
-    '10011111111001',
-    '10011111111001',
-    '10000111110001',
-    '00001110111000',
-    '00001100011000',
+    '00013111310000',
+    '00131111131000',
+    '00013111310000',
+    '00001111110000',
+    '00122222221100',
+    '01222222222110',
+    '01221221122110',
+    '01221221122110',
+    '01222212222110',
+    '10122222221001',
+    '10012222210001',
+    '00011222110000',
+    '00001010100000',
     '00000000000000',
   ],
-  // 便便
+  // 便便（可?�螺?��?
   poop:[
     '00001100000000',
+    '00012120000000',
+    '00121212000000',
     '00011110000000',
-    '00011110000000',
-    '00001100000000',
-    '00011111000000',
-    '00111111100000',
-    '00111111100000',
-    '00011111000000',
+    '00111111000000',
+    '01111111100000',
+    '01111111100000',
+    '00111111000000',
     '00000000000000',
     '00000000000000',
     '00000000000000',
@@ -485,7 +492,7 @@ const SP = {
     '00000000000000',
     '00000000000000',
   ],
-  // 臭臭（便便警告）
+  // ?�臭（便便警?�波浪�?
   stink:[
     '00200200000000',
     '02020200000000',
@@ -502,7 +509,7 @@ const SP = {
     '00000000000000',
     '00000000000000',
   ],
-  // 病符（閃爍在角落）
+  // ?�符（�??��?
   sick:[
     '11001100',
     '10100101',
@@ -511,7 +518,7 @@ const SP = {
   ],
 };
 
-const S = 10; // 每像素放大倍數（14*10=140px）
+const S = 10; // 每�?素放大倍數�?4*10=140px�?
 
 function drawSprite(key, dx, dy, scale){
   scale = scale||S;
@@ -528,87 +535,52 @@ function drawSprite(key, dx, dy, scale){
   }
 }
 
-// ── 迷你像素字型 ─────────────────────────────────────
-const F5={
-  '0':'0111010010100111',
-  '1':'0101100010001001',
-  '2':'0111000101100111',
-  '3':'0111000100110111',
-  '4':'0010001011110010',
-  '5':'1111011110001110',
-  '6':'0111010001110111',
-  '7':'1111000100010001',
-  '8':'0111010110110111',
-  '9':'0111010111000111',
-  'A':'0110110011101100',
-  'B':'1110100111001110',
-  'C':'0111100010000110',
-  'D':'1110100110011110',
-  'E':'1111100011001111',
-  'F':'1111100011000000',
-  'G':'0111100010110111',
-  'H':'1001100111001001',
-  'I':'0111001000100111',
-  'K':'1001101011011001',
-  'L':'1000100010001111',
-  'M':'1001110111001001',
-  'N':'1001110111011001',
-  'O':'0111100110010110',
-  'P':'1110100111000000',
-  'R':'1110100111011001',
-  'S':'0111100001100111',
-  'T':'1110001000100010',
-  'U':'1001100110010111',
-  'V':'1001100101010010',
-  'W':'1001100110111001',
-  'X':'1001010100101001',
-  'Y':'1001010100100010',
-  'Z':'1111000100010111',
-  ' ':'0000000000000000',
-  ':':'0100000001000000',
-  '-':'0000011100000000',
-  '.':'0000000000000001',
-  '!':'0100010001000010',
-  '/':'0001001001001000',
-};
-function drawChar(ch,px,py,sc,col){
-  sc=sc||1;col=col||'#1a1a1a';
-  const bits=F5[ch.toUpperCase()];
-  if(!bits)return (5+1)*sc;
-  ctx.fillStyle=col;
-  const rows=4,cols=bits.length/rows;
-  for(let i=0;i<bits.length;i++){
-    if(bits[i]==='1'){
-      const c=i%cols,r=Math.floor(i/cols);
-      ctx.fillRect(px+c*sc,py+r*sc,sc,sc);
-    }
-  }
-  return (cols+1)*sc;
-}
+// ?�?� canvas ?��?（Press Start 2P）�??�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�
+// sc: 1=7px  2=10px  3=14px  4=18px（�?齊其他�??�風?��?
+const SC_PX=[0,7,10,14,18];
 function drawText(str,px,py,sc,col){
   sc=sc||1;col=col||'#1a1a1a';
-  let x=px;
-  for(const ch of str) x+=drawChar(ch,x,py,sc,col);
+  const sz=SC_PX[sc]||sc*6;
+  ctx.save();
+  ctx.font=sz+'px "Press Start 2P",monospace';
+  ctx.fillStyle=col;
+  ctx.textBaseline='top';
+  ctx.fillText(str,px,py);
+  ctx.restore();
+}
+function textW(str,sc){
+  sc=sc||1;
+  const sz=SC_PX[sc]||sc*6;
+  ctx.save();
+  ctx.font=sz+'px "Press Start 2P",monospace';
+  const w=ctx.measureText(str).width;
+  ctx.restore();
+  return w;
+}
+// 置中輔助
+function drawTextC(str,cy,sc,col){
+  const w=textW(str,sc);
+  drawText(str,Math.floor((W-w)/2),cy,sc,col);
 }
 
-// ── 狀態物件 ─────────────────────────────────────────
+// ?�?� ?�?�物�??�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�
 let pet = null;
 
 function newPet(){
   return {
-    stage:'egg',      // egg→baby→child→teen→adult→senior
+    stage:'egg',      // egg?�baby?�child?�teen?�adult?�senior
     ageMin:0,
-    hunger:0,         // 0=飽 4=餓
+    hunger:0,         // 0=�?4=�?
     happy:4,
     weight:5,
     discipline:0,     // 0-4
     sick:false,
-    sickPresses:0,    // 還需要按幾次藥
-    poop:0,           // 便便數量 0-3
-    poopWarn:false,   // 便便警告狀態
-    poopWarnAge:0,    // 警告累計分鐘
-    callAttn:false,   // 亮燈
-    fakeAttn:false,   // 假呼叫（紀律機會）
+    sickPresses:0,    // ?��?要�?幾次??
+    poop:0,           // 便便?��? 0-3
+    poopWarn:false,   // 便便警�??�??
+    poopWarnAge:0,    // 警�?累�??��?
+    callAttn:false,   // 亮�?
+    fakeAttn:false,   // ?�呼?��?紀律�??��?
     careMiss:0,
     hungerAcc:0,
     happyAcc:0,
@@ -621,40 +593,40 @@ function newPet(){
     angel:false,
     lastTs:Date.now(),
     fastMode:false,
+    eggType:0,
   };
 }
 
 const SAVE='tamagotchi_v2';
-const save=()=>{try{localStorage.setItem(SAVE,JSON.stringify(pet));}catch(e){}};
+const save=()=>{}; // DISABLED FOR TESTING
 function loadPet(){
-  try{
-    const d=localStorage.getItem(SAVE);
-    if(d){pet=JSON.parse(d);return true;}
-  }catch(e){}
-  return false;
+  return false; // DISABLED FOR TESTING
 }
 
-// ── UI 狀態 ───────────────────────────────────────────
+// ?�?� UI ?�???�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�
 const MENUS=['food','light','play','meds','toilet','status','discipline'];
 let menuIdx=0, menuOpen=false, subIdx=0;
 let showStat=false;
-let playState=null; // null | {phase,pChoice,cChoice,result}
+let playState=null;
 let animF=0, blinkOn=true, blinkT=0;
+let shopPhase=false, shopIdx=0;
+let eggShake={active:false,frames:0,next:120}; // ?��??�??
 
-// ── 成長閥值（ageDays）───────────────────────────────
+// ?�?� ?�長?�值�?ageDays）�??�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�
 const STAGE_DAYS={baby:0,child:1,teen:3,adult:6,senior:10};
 const NEXT_STAGE={egg:'baby',baby:'child',child:'teen',teen:'adult',adult:'senior'};
 
-// ── 夜間判斷 ────────────────────────────────────────
+// ?�?� 夜�??�斷 ?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�
 const isSleepTime=()=>{const h=new Date().getHours();return h>=SLEEP_START||h<SLEEP_END;};
 
-// ── 離線補算 ─────────────────────────────────────────
+// ?�?� ?��?補�? ?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�
 function applyOffline(){
+  return; // DISABLED FOR TESTING
   if(!pet||pet.dead||pet.stage==='egg')return;
   const now=Date.now();
   const raw=now-(pet.lastTs||now);
   if(raw<=0){pet.lastTs=now;return;}
-  // 超過 grace 的才算
+  // 超�? grace ?��?�?
   const eff=Math.max(0,raw-OFFLINE_GRACE);
   if(eff<=0){pet.lastTs=now;return;}
   const gm=(eff/1000/60)*(FAST_MODE?60:1)*0.6;
@@ -671,7 +643,7 @@ function applyOffline(){
   pet.lastTs=now;
 }
 
-// ── 主 Tick ──────────────────────────────────────────
+// ?�?� �?Tick ?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�
 function tick(){
   animF++;
   blinkT++;
@@ -680,7 +652,7 @@ function tick(){
   if(!pet){render();return;}
   if(pet.dead){animF%2===0&&save();render();return;}
 
-  // 蛋
+  // ??
   if(pet.stage==='egg'){
     pet.ageMin+=mpt();
     if(pet.ageMin>=60*24) hatch();
@@ -695,7 +667,7 @@ function tick(){
     const m=mpt();
     pet.ageMin+=m;
 
-    // 飢餓
+    // 飢�?
     pet.hungerAcc+=m;
     if(pet.hungerAcc>=HUNGER_DECAY){
       pet.hungerAcc-=HUNGER_DECAY;
@@ -703,7 +675,7 @@ function tick(){
       if(pet.hunger>=4){pet.callAttn=true;pet.careMiss++;}
     }
 
-    // 快樂
+    // 快�?
     pet.happyAcc+=m;
     if(pet.happyAcc>=HAPPY_DECAY){
       pet.happyAcc-=HAPPY_DECAY;
@@ -711,7 +683,7 @@ function tick(){
       if(pet.happy<=0){pet.callAttn=true;pet.careMiss++;}
     }
 
-    // 便便流程
+    // 便便流�?
     pet.poopAcc+=m;
     if(!pet.poopWarn&&pet.poopAcc>=POOP_INTERVAL&&pet.poop<3){
       pet.poopAcc=0;
@@ -723,11 +695,11 @@ function tick(){
     if(pet.poopWarn){
       pet.poopWarnAge+=m;
       if(pet.poopWarnAge>=POOP_WARN_TTL){
-        // 真的拉了
+        // ?��??��?
         pet.poopWarn=false;
         pet.poopWarnAge=0;
         pet.poop=Math.min(pet.poop+1,3);
-        // 有便便就有機會生病
+        // ?�便便就?��??��???
         if(pet.poop>=2&&!pet.sick){
           pet.sick=true;
           pet.sickPresses=1+Math.floor(Math.random()*2);
@@ -736,7 +708,7 @@ function tick(){
       }
     }
 
-    // 疾病計時
+    // ?��?計�?
     if(pet.sick){
       pet.sickAcc+=m;
       if(pet.sickAcc>=240){die(false);return;}
@@ -744,14 +716,14 @@ function tick(){
       pet.sickAcc=0;
     }
 
-    // 體重過重生病
+    // 體�??��??��?
     if(pet.weight>12&&!pet.sick&&Math.random()<0.003){
       pet.sick=true;
       pet.sickPresses=1+Math.floor(Math.random()*2);
       recalcAttn();
     }
 
-    // 假呼叫（紀律機會）
+    // ?�呼?��?紀律�??��?
     pet.fakeAcc+=m;
     if(!pet.fakeAttn&&!pet.callAttn&&pet.fakeAcc>180+Math.random()*120){
       pet.fakeAcc=0;
@@ -760,7 +732,7 @@ function tick(){
       sfx('alert');
     }
 
-    // 成長
+    // ?�長
     checkGrowth();
   }
 
@@ -783,7 +755,7 @@ function checkGrowth(){
   const need=STAGE_DAYS[next];
   if(need===undefined)return;
   if(ageDays>=need){
-    // Senior 到了一定壽命 → 自然死（天使）
+    // Senior ?��?一定壽?????�然死�?天使�?
     if(pet.stage==='senior'&&ageDays>=STAGE_DAYS.senior+5){
       die(true);return;
     }
@@ -809,7 +781,7 @@ function recalcAttn(){
   pet.callAttn=(pet.hunger>=4||pet.happy<=0||pet.sick||pet.poop>0||pet.poopWarn||pet.fakeAttn);
 }
 
-// ── 照顧動作 ─────────────────────────────────────────
+// ?�?� ?�顧?��? ?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�
 function actFeed(snack){
   if(!pet||pet.dead||pet.sleeping||pet.sick)return;
   if(snack){if(pet.happy<4)pet.happy++;pet.weight+=1;}
@@ -837,14 +809,14 @@ function actToilet(){
 function actDiscipline(){
   if(!pet||pet.dead)return;
   if(pet.fakeAttn){
-    // 正確出手：增加紀律
+    // �?��?��?：�??��?�?
     pet.fakeAttn=false;
     pet.callAttn=false;
     if(pet.discipline<4)pet.discipline++;
     sfx('scold');
     render();renderHUD();
   }else if(pet.callAttn&&(pet.hunger>=4||pet.happy<=0)){
-    // 真需求時懲罰 → careMiss
+    // ?��?求�??�罰 ??careMiss
     pet.careMiss++;
     sfx('scold');
   }else{
@@ -853,7 +825,7 @@ function actDiscipline(){
   recalcAttn();save();
 }
 
-// ── 猜拳 ────────────────────────────────────────────
+// ?�?� ?�拳 ?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�
 function startPlay(){
   if(!pet||pet.dead||pet.sleeping||pet.sick)return;
   playState={phase:'choose',pChoice:0,cChoice:0,result:null};
@@ -875,7 +847,7 @@ function resolvePlay(){
   recalcAttn();save();
 }
 
-// ── 畫面渲染 ─────────────────────────────────────────
+// ?�?� ?�面渲�? ?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�
 function sprKey(){
   if(!pet)return'egg';
   if(pet.dead)return pet.angel?'angel':'skull';
@@ -889,77 +861,214 @@ function bg(dark){
   ctx.fillRect(0,0,W,H);
 }
 
+function drawLCDGrid(){
+  const CELL=4; // 每格 4px
+  ctx.save();
+  ctx.strokeStyle='rgba(180,80,130,0.09)';
+  ctx.lineWidth=0.5;
+  for(let x=0;x<=W;x+=CELL){
+    ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke();
+  }
+  for(let y=0;y<=H;y+=CELL){
+    ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();
+  }
+  ctx.restore();
+}
+
 function render(){
-  if(!pet){drawStart();return;}
-  if(pet.dead){pet.angel?drawAngel():drawDead();return;}
-  if(pet.stage==='egg'){drawEgg();return;}
-  if(pet.sleeping){drawSleep();return;}
-  if(playState){drawPlay();return;}
-  if(showStat){drawStatus();return;}
-  if(menuOpen){drawSubMenu();return;}
-  drawMain();
+  if(shopPhase){drawShop();drawLCDGrid();return;}
+  if(!pet){drawStart();drawLCDGrid();return;}
+  if(pet.dead){pet.angel?drawAngel():drawDead();drawLCDGrid();return;}
+  if(pet.stage==='egg'){drawEgg();drawLCDGrid();return;}
+  if(pet.sleeping){drawSleep();drawLCDGrid();return;}
+  if(playState){drawPlay();drawLCDGrid();return;}
+  if(showStat){drawStatus();drawLCDGrid();return;}
+  if(menuOpen){drawSubMenu();drawLCDGrid();return;}
+  drawMain();drawLCDGrid();
+}
+
+// ?�?� ??canvas arc ?��?滑�?�??�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�
+function drawEggShape(cx,cy,rw,rh,typeIdx){
+  const t=EGG_TYPES[typeIdx||0];
+  ctx.save();
+  // ?�影
+  ctx.beginPath();
+  ctx.ellipse(cx,cy+rh+4,rw*0.7,5,0,0,Math.PI*2);
+  ctx.fillStyle='rgba(0,0,0,0.13)';ctx.fill();
+  // ?�形 4 段�??��?上�?潤、中寬、�???
+  const top=cy-rh, bot=cy+rh;
+  ctx.beginPath();
+  ctx.moveTo(cx, top);
+  // ?��?：�?點�??��??��??�制點�??��??�部?��?
+  ctx.bezierCurveTo(cx+rw*0.75, top,         cx+rw,      cy-rh*0.1,   cx+rw,      cy+rh*0.2);
+  // ?��?：�?寬�??��??�收
+  ctx.bezierCurveTo(cx+rw,      cy+rh*0.65,  cx+rw*0.55, bot,         cx,         bot);
+  // 左�?：�?底左??
+  ctx.bezierCurveTo(cx-rw*0.55, bot,         cx-rw,      cy+rh*0.65,  cx-rw,      cy+rh*0.2);
+  // 左�?：收窄�??��?（控?��?外推讓�??��?�?
+  ctx.bezierCurveTo(cx-rw,      cy-rh*0.1,   cx-rw*0.75, top,         cx,         top);
+  ctx.closePath();
+  ctx.fillStyle=t.fill;ctx.fill();
+  ctx.strokeStyle=t.stroke;ctx.lineWidth=3;ctx.stroke();
+  // 裝飾
+  if(t.deco==='spots'){
+    ctx.fillStyle=t.stroke;
+    [[cx-rw*.25,cy-rh*.1,4],[cx+rw*.2,cy+rh*.15,5],[cx-rw*.05,cy+rh*.35,3]]
+      .forEach(([x,y,r])=>{ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();});
+  }else if(t.deco==='stars'){
+    ctx.fillStyle=t.stroke;
+    [[cx+rw*.2,cy-rh*.2],[cx-rw*.25,cy+rh*.1],[cx+rw*.05,cy+rh*.35]]
+      .forEach(([x,y])=>{
+        ctx.beginPath();
+        ctx.moveTo(x,y-5);ctx.lineTo(x+3,y);ctx.lineTo(x,y+5);ctx.lineTo(x-3,y);
+        ctx.closePath();ctx.fill();
+      });
+  }
+  // ?�澤
+  ctx.beginPath();
+  ctx.ellipse(cx-rw*.22,cy-rh*.3,rw*.15,rh*.11,-0.4,0,Math.PI*2);
+  ctx.fillStyle='rgba(255,255,255,0.55)';ctx.fill();
+  ctx.restore();
 }
 
 function drawStart(){
   bg();
-  drawSprite('egg',14,10,5);
-  drawText('PRESS B',28,110,2);
-  drawText('TO START',22,128,1);
+  drawEggShape(W/2,52,26,33,0);
+  if(blinkOn){
+    drawTextC('PRESS B',108,2);
+    drawTextC('TO START',122,1);
+  }
+}
+
+function drawShop(){
+  bg();
+  drawTextC('PET SHOP',4,2);
+  ctx.fillStyle='#c060a0';ctx.fillRect(4,22,W-8,2);
+  const t=EGG_TYPES[shopIdx];
+  drawEggShape(W/2,62,28,35,shopIdx);
+  EGG_TYPES.forEach((_,i)=>{
+    ctx.beginPath();
+    ctx.arc(W/2+(i-1)*14,104,i===shopIdx?4:2.5,0,Math.PI*2);
+    ctx.fillStyle=i===shopIdx?'#1a1a1a':'#888';ctx.fill();
+  });
+  drawTextC(t.name,110,1);
+  drawTextC(t.desc,122,1);
+  drawText('<',8,60,2);
+  drawText('>',W-14,60,2);
+  if(blinkOn) drawTextC('B:PICK',H-14,1);
 }
 
 function drawEgg(){
   bg();
-  const ex=(W-14*S)/2, ey=14;
-  // 隨機抖動
-  const jx=(animF%20<3)?-S:0;
-  drawSprite('egg',ex+jx,ey);
   const pct=Math.min(1,pet.ageMin/(60*24));
+
+  // ?��?計�?：pct 越大觸發越頻�?
+  eggShake.next--;
+  if(eggShake.next<=0){
+    eggShake.active=true;
+    eggShake.frames=8+Math.floor(Math.random()*8); // ??8-15 幀
+    const interval=60+Math.floor((1-pct)*180);     // pct=0??40幀,pct=1??0幀
+    eggShake.next=interval+Math.floor(Math.random()*interval*0.5);
+    sfx('click');
+  }
+  let ox=0,oy=0;
+  if(eggShake.active){
+    eggShake.frames--;
+    if(eggShake.frames<=0) eggShake.active=false;
+    // 左右?��?交替
+    const amp=eggShake.frames>4?6:3;
+    ox=(eggShake.frames%2===0)?amp:-amp;
+    oy=(eggShake.frames%4<2)?-1:1;
+  }
+
+  const cx=W/2, cy=56;
+  drawEggShape(cx+ox,cy+oy,30,38,pet.eggType||0);
+
+  // 龜�?線�?孵�? > 80%�?
+  if(pct>0.8&&blinkOn){
+    ctx.strokeStyle='#333';ctx.lineWidth=2;
+    ctx.beginPath();
+    ctx.moveTo(cx+ox-2,cy+oy-12);ctx.lineTo(cx+ox+7,cy+oy);ctx.lineTo(cx+ox-5,cy+oy+12);
+    ctx.stroke();
+  }
+
+  // ?�種?�稱
+  const t=EGG_TYPES[pet.eggType||0];
+  drawTextC(t.name,4,1);
+
+  // ?�度�?
   const bw=Math.floor(pct*120);
   ctx.fillStyle='#4a4a30';ctx.fillRect(20,H-20,120,8);
   ctx.fillStyle='#c8e040';ctx.fillRect(20,H-20,bw,8);
-  drawText('HATCH',36,H-34,1);
+  drawTextC('HATCH',H-34,1);
 }
 
 function drawMain(){
   bg(pet.sleeping);
   const sk=sprKey();
-  // 走路擺動
+  // 走路?��?
   const wb=(animF%20<10)?-1:1;
   const ex=Math.floor((W-14*S)/2)+wb*S;
   const ey=10;
 
   if(pet.poopWarn&&animF%16<8){
-    // 苦臉：繪製精靈後加深色 tint
+    // ?��?：繪製精?��??�深??tint
     drawSprite(sk,ex,ey);
     ctx.fillStyle='rgba(100,60,0,0.3)';
     ctx.fillRect(ex,ey,14*S,14*S);
-    // 臭臭符號
+    // ?�臭符�?
     drawSprite('stink',4,4,8);
     drawSprite('stink',W-4-14*8,4,8);
   }else{
     drawSprite(sk,ex,ey);
   }
 
-  // 病符
+  // ?�符
   if(pet.sick&&blinkOn){
     drawSprite('sick',4,4,8);
   }
 
   // 便便
   for(let i=0;i<pet.poop;i++){
-    drawSprite('poop',4+i*26,H-34,10);
+    drawSprite('poop',4+i*26,H-56,10);
   }
 
-  // 呼叫注意感嘆號
+  // ?�叫注�??��???
   if(pet.callAttn&&blinkOn){
-    ctx.fillStyle='#c0392b';
+    ctx.fillStyle='#e8509a';
     ctx.fillRect(W-18,4,10,16);
     ctx.fillRect(W-18,22,10,6);
   }
 
-  // 年齡
-  const ageDays=(pet.ageMin/(60*24)).toFixed(1);
-  drawText('AGE '+ageDays,4,4,1);
+  // ?�?� ?�求�?示�?（�??��??�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�
+  if(pet.callAttn){
+    const needs=[];
+    if(pet.hunger>=3)         needs.push({icon:'??',label:'FEED'});
+    if(pet.happy<=1)          needs.push({icon:'?��',label:'PLAY'});
+    if(pet.sick)              needs.push({icon:'??',label:'MEDS'});
+    if(pet.poop>0||pet.poopWarn) needs.push({icon:'?��',label:'CLEAN'});
+    if(pet.fakeAttn)          needs.push({icon:'?��',label:'SCOLD'});
+
+    if(needs.length>0){
+      const total=needs.length;
+      const slotW=Math.floor(W/total);
+      // 底部?�透�??�景
+      ctx.fillStyle='rgba(200,80,140,0.18)';
+      ctx.fillRect(0,H-28,W,28);
+      needs.forEach((n,i)=>{
+        const cx=i*slotW+Math.floor(slotW/2);
+        // emoji icon
+        ctx.save();
+        ctx.font='14px serif';
+        ctx.textBaseline='middle';
+        ctx.textAlign='center';
+        if(blinkOn) ctx.fillText(n.icon,cx,H-14);
+        ctx.restore();
+      });
+    }
+  }
+
+  drawText((pet.ageMin/(60*24)).toFixed(1)+'d',4,4,1);
 }
 
 function drawSleep(){
@@ -970,29 +1079,32 @@ function drawSleep(){
     drawText('Z',W-24,10,3,LCD_LIGHT);
     drawText('Z',W-16,4,2,LCD_LIGHT);
   }
-  drawText('SLEEP',42,H-18,1,LCD_LIGHT);
+  if(blinkOn) drawTextC('SLEEP',H-16,1,LCD_LIGHT);
 }
 
 function drawSubMenu(){
   bg();
   const m=MENUS[menuIdx];
   const T={food:'FEED',light:'LIGHT',play:'GAME',meds:'MEDS',toilet:'CLEAN',status:'STATUS',discipline:'SCOLD'};
-  drawText(T[m]||m,36,8,2);
-  ctx.fillStyle='#2a2a10';ctx.fillRect(4,26,W-8,2);
+  drawTextC(T[m]||m,6,2);
+  ctx.fillStyle='#c060a0';ctx.fillRect(4,28,W-8,2);
   if(m==='food'){
     ['MEAL','SNACK'].forEach((it,i)=>{
       if(i===subIdx){
-        ctx.fillStyle='#1a1a1a';ctx.fillRect(20,44+i*40,128,28);
-        drawText(it,24,52+i*40,2,'#8fa85a');
-      }else drawText(it,24,52+i*40,2,'#1a1a1a');
+        ctx.fillStyle='#1a1a1a';ctx.fillRect(16,40+i*44,136,28);
+        drawTextC(it,46+i*44,2,'#8fa85a');
+      }else{
+        drawTextC(it,46+i*44,2);
+      }
     });
+    drawTextC('A/C:SEL  B:OK',H-14,1);
   }
 }
 
 function drawStatus(){
   bg();
-  drawText('STATUS',30,4,2);
-  ctx.fillStyle='#2a2a10';ctx.fillRect(4,22,W-8,2);
+  drawTextC('STATUS',4,2);
+  ctx.fillStyle='#c060a0';ctx.fillRect(4,24,W-8,2);
   const ageDays=(pet.ageMin/(60*24)).toFixed(1);
   [
     ['AGE',ageDays+'d'],
@@ -1002,8 +1114,9 @@ function drawStatus(){
     ['DISC',pet.discipline+'/4'],
     ['SICK',pet.sick?'YES':'NO'],
   ].forEach(([l,v],i)=>{
-    drawText(l,8,28+i*18,1);
-    drawText(v,106,28+i*18,1);
+    drawText(l,6,30+i*18,1);
+    const vw=textW(v,1);
+    drawText(v,W-6-vw,30+i*18,1);
   });
 }
 
@@ -1011,51 +1124,51 @@ function drawPlay(){
   bg();
   const ps=playState;
   if(ps.phase==='choose'){
-    drawText('GUESS!',38,6,2);
-    ctx.fillStyle='#2a2a10';ctx.fillRect(4,24,W-8,2);
-    ['PAPER','ROCK ','SCISS'].forEach((o,i)=>{
+    drawTextC('GUESS!',4,2);
+    ctx.fillStyle='#c060a0';ctx.fillRect(4,24,W-8,2);
+    ['PAPER','ROCK','SCISS'].forEach((o,i)=>{
       if(i===subIdx){
-        ctx.fillStyle='#1a1a1a';ctx.fillRect(18,32+i*36,132,28);
-        drawText(o,22,40+i*36,2,'#8fa85a');
-      }else drawText(o,22,40+i*36,2,'#1a1a1a');
+        ctx.fillStyle='#1a1a1a';ctx.fillRect(14,32+i*38,140,28);
+        drawTextC(o,38+i*38,2,'#8fa85a');
+      }else drawTextC(o,38+i*38,2);
     });
-    drawText('A:PREV B:OK',14,H-16,1);
+    drawTextC('A:< C:>  B:OK',H-14,1);
   }else{
     const N=['PAPER','ROCK ','SCISS'];
-    drawText('YOU:'+N[ps.pChoice],8,14,1);
-    drawText('CPU:'+N[ps.cChoice],8,30,1);
-    ctx.fillStyle='#2a2a10';ctx.fillRect(4,44,W-8,2);
+    drawText('YOU:'+N[ps.pChoice],6,16,1);
+    drawText('CPU:'+N[ps.cChoice],6,30,1);
+    ctx.fillStyle='#c060a0';ctx.fillRect(4,46,W-8,2);
     const pal={win:'#1e8449',lose:'#c0392b',draw:'#7d6608'};
     ctx.fillStyle=pal[ps.result]||'#888';
-    ctx.fillRect(28,52,112,44);
-    drawText(ps.result.toUpperCase(),ps.result==='draw'?36:40,70,3,'#fff');
-    drawText('B:NEXT',42,H-16,1);
+    ctx.fillRect(24,54,120,44);
+    drawTextC(ps.result.toUpperCase(),64,3,'#fff');
+    if(blinkOn) drawTextC('B:NEXT',H-14,1);
   }
 }
 
 function drawDead(){
   bg();
-  // 骷髏居中
+  // 骷�?居中
   drawSprite('skull',Math.floor((W-14*S)/2),14);
-  // 墓碑小圖（像素畫）
+  // 墓�?小�?（�?素畫�?
   ctx.fillStyle=PAL[1];
-  ctx.fillRect(62,H-36,44,28);  // 碑底
-  ctx.fillRect(66,H-48,36,14);  // 碑上圓弧（矩形近似）
+  ctx.fillRect(62,H-36,44,28);  // 碑�?
+  ctx.fillRect(66,H-48,36,14);  // 碑�??�弧（矩形�?似�?
   ctx.fillRect(72,H-56,24,10);
   ctx.fillStyle=LCD_LIGHT;
-  ctx.fillRect(70,H-44,28,20);  // 刻字區
-  if(blinkOn) drawText('RIP',74,H-40,2,'#2a2a10');
-  drawText('B:RETRY',26,6,1);
+  ctx.fillRect(70,H-44,28,20);  // ?��??�
+  if(blinkOn) drawTextC('RIP',H-36,1,'#c060a0');
+  if(blinkOn) drawTextC('B:RETRY',6,1);
 }
 
 function drawAngel(){
   bg();
   const fy=10+Math.sin(animF*0.07)*8;
   drawSprite('angel',Math.floor((W-14*S)/2),Math.floor(fy));
-  if(blinkOn) drawText('GOODBYE!',18,H-18,2);
+  if(blinkOn) drawTextC('GOODBYE!',H-18,2);
 }
 
-// ── HUD ─────────────────────────────────────────────
+// ?�?� HUD ?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�
 function renderHUD(){
   if(!pet)return;
   ['hunger','happy'].forEach(key=>{
@@ -1079,7 +1192,7 @@ function renderIcons(){
   });
 }
 
-// ── 音效 ────────────────────────────────────────────
+// ?�?� ?��? ?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�
 let AC=null, muted=false;
 function getAC(){if(!AC)try{AC=new(window.AudioContext||window.webkitAudioContext)();}catch(e){}return AC;}
 function beep(freq,dur,v,type){
@@ -1113,14 +1226,15 @@ function sfx(t){
   }
 }
 
-// ── 按鈕邏輯 ────────────────────────────────────────
+// ?�?� ?��??�輯 ?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�
 function pressA(){
   getAC();
+  if(shopPhase){shopIdx=(shopIdx+EGG_TYPES.length-1)%EGG_TYPES.length;sfx('click');render();return;}
   if(!pet||pet.dead)return;
-  if(playState&&playState.phase==='choose'){subIdx=(subIdx+2)%3;render();return;}
+  if(playState&&playState.phase==='choose'){subIdx=(subIdx+3-1)%3;sfx('click');render();return;}
   if(menuOpen){
     const m=MENUS[menuIdx];
-    if(m==='food')subIdx=(subIdx+1)%2;
+    if(m==='food'){subIdx=(subIdx+1)%2;sfx('click');}
     render();return;
   }
   menuIdx=(menuIdx+MENUS.length-1)%MENUS.length;
@@ -1128,8 +1242,12 @@ function pressA(){
 }
 function pressB(){
   getAC();
-  if(!pet){pet=newPet();save();render();return;}
-  if(pet.dead){pet=newPet();save();render();renderHUD();return;}
+  if(!pet&&!shopPhase){shopPhase=true;shopIdx=0;sfx('click');render();return;}
+  if(shopPhase){
+    const p=newPet();p.eggType=shopIdx;pet=p;
+    shopPhase=false;eggShake={active:false,frames:0,next:120};save();sfx('hatch');render();return;
+  }
+  if(pet.dead){shopPhase=true;shopIdx=0;pet=null;render();return;}
   if(playState){
     if(playState.phase==='choose'){playState.pChoice=subIdx;resolvePlay();render();}
     else{playState=null;render();}
@@ -1144,31 +1262,38 @@ function pressB(){
   const m=MENUS[menuIdx];
   if(m==='status'){showStat=true;render();return;}
   if(m==='play'){startPlay();return;}
-  if(m==='food'){menuOpen=true;subIdx=0;render();return;}
-  if(m==='light'){sfx('click');}
-  if(m==='meds')actMeds();
-  if(m==='toilet')actToilet();
-  if(m==='discipline')actDiscipline();
+  if(m==='food'){menuOpen=true;subIdx=0;sfx('click');render();return;}
+  if(m==='light'){sfx('click');render();return;}
+  if(m==='meds'){actMeds();return;}
+  if(m==='toilet'){actToilet();return;}
+  if(m==='discipline'){actDiscipline();return;}
   render();renderHUD();
 }
 function pressC(){
   getAC();
+  if(shopPhase){shopIdx=(shopIdx+1)%EGG_TYPES.length;sfx('click');render();return;}
   if(!pet||pet.dead)return;
-  if(playState){playState=null;render();return;}
-  if(menuOpen){menuOpen=false;render();return;}
+  if(playState&&playState.phase==='choose'){subIdx=(subIdx+1)%3;sfx('click');render();return;}
+  if(playState&&playState.phase==='result'){playState=null;render();return;}
+  if(menuOpen){
+    const m=MENUS[menuIdx];
+    if(m==='food'){subIdx=(subIdx+1)%2;sfx('click');render();}
+    else{menuOpen=false;render();}
+    return;
+  }
   if(showStat){showStat=false;render();return;}
   menuIdx=(menuIdx+1)%MENUS.length;
   renderIcons();render();
 }
 
-// ── A+C 同時按重置 ────────────────────────────────────
+// ?�?� A+C ?��??��?�??�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�
 let aDown=false,cDown=false,resetTimer=null;
 function tryReset(){
   if(aDown&&cDown){
     resetTimer=setTimeout(()=>{
       if(aDown&&cDown){
         localStorage.removeItem(SAVE);
-        pet=null;aDown=false;cDown=false;
+        pet=null;shopPhase=false;aDown=false;cDown=false;
         render();
         const el=document.getElementById('hunger-hearts');
         if(el) el.innerHTML='';
@@ -1203,7 +1328,7 @@ document.getElementById('btn-c').addEventListener('click',pressC);
   });
 });
 
-// icon 點擊
+// icon 點�?
 document.querySelectorAll('.menu-icon').forEach((el,i)=>{
   el.addEventListener('click',()=>{
     menuIdx=i;renderIcons();
@@ -1217,20 +1342,20 @@ document.querySelectorAll('.menu-icon').forEach((el,i)=>{
   });
 });
 
-// 靜音
+// ?�音
 document.getElementById('btn-mute').addEventListener('click',()=>{
   muted=!muted;
   document.getElementById('btn-mute').classList.toggle('active',muted);
 });
 
-// 快速模式
+// 快速模�?
 document.getElementById('btn-fast').addEventListener('click',()=>{
   FAST_MODE=!FAST_MODE;
   document.getElementById('btn-fast').classList.toggle('active',FAST_MODE);
   if(pet){pet.fastMode=FAST_MODE;save();}
 });
 
-// 鍵盤
+// ?�盤
 document.addEventListener('keydown',e=>{
   const k=e.key;
   if(k==='ArrowLeft'||k==='a')pressA();
@@ -1246,17 +1371,10 @@ document.addEventListener('keyup',e=>{
   if(k==='c'){cDown=false;cancelReset();}
 });
 
-// ── 啟動 ─────────────────────────────────────────────
-if(loadPet()){
-  FAST_MODE=pet?.fastMode||false;
-  document.getElementById('btn-fast').classList.toggle('active',FAST_MODE);
-  applyOffline();
-  if(pet) pet.lastTs=Date.now();
-}else{
-  // 直接從蛋開始，不需要按 B
-  pet=newPet();
-  save();
-}
+// ?�?� ?��? ?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�?�
+// 測試模�?：�??��?檔�?從�?始畫?�顯�?
+try{localStorage.removeItem(SAVE);}catch(e){}
+pet=null;
 renderIcons();
 render();
 if(pet) renderHUD();
