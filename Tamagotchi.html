@@ -2952,7 +2952,7 @@ window.addEventListener('beforeunload',()=>{
   if(pet){pet.lastTs=Date.now();save();}
 });
 
-try{localStorage.setItem('lastPlayed','Tamagotchi.html');}catch(e){}
+try{const _q=JSON.parse(localStorage.getItem('lastPlayedQueue')||'[]').filter(x=>x!=='Tamagotchi.html');_q.unshift('Tamagotchi.html');localStorage.setItem('lastPlayedQueue',JSON.stringify(_q.slice(0,3)));}catch(e){}
 </script>
 </body>
 </html>

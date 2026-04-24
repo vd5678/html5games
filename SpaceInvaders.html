@@ -246,7 +246,7 @@
 
 <script>
 'use strict';
-try{localStorage.setItem('lastPlayed','SpaceInvaders.html');}catch(e){}
+try{const _q=JSON.parse(localStorage.getItem('lastPlayedQueue')||'[]').filter(x=>x!=='SpaceInvaders.html');_q.unshift('SpaceInvaders.html');localStorage.setItem('lastPlayedQueue',JSON.stringify(_q.slice(0,3)));}catch(e){}
 
 // ── Canvas setup ──────────────────────────────────────────
 const canvas = document.getElementById('canvas');

@@ -123,7 +123,7 @@ canvas {
 </div>
 
 <script>
-try{localStorage.setItem('lastPlayed','DrPill.html');}catch(e){}
+try{const _q=JSON.parse(localStorage.getItem('lastPlayedQueue')||'[]').filter(x=>x!=='DrPill.html');_q.unshift('DrPill.html');localStorage.setItem('lastPlayedQueue',JSON.stringify(_q.slice(0,3)));}catch(e){}
 /************************************************************
  * DR. PILL – Virus Buster
  * HTML5 Canvas Puzzle Game

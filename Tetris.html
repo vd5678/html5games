@@ -316,7 +316,7 @@ canvas#board{ display:block; }
 </div>
 
 <script>
-try{localStorage.setItem('lastPlayed','Tetris.html');}catch(e){}
+try{const _q=JSON.parse(localStorage.getItem('lastPlayedQueue')||'[]').filter(x=>x!=='Tetris.html');_q.unshift('Tetris.html');localStorage.setItem('lastPlayedQueue',JSON.stringify(_q.slice(0,3)));}catch(e){}
 /* ================================================================
    NES / Game Boy 風格俄羅斯方塊  —  完整版
    ================================================================ */

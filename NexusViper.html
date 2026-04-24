@@ -164,7 +164,7 @@
 
 <script>
 'use strict';
-try{localStorage.setItem('lastPlayed','NexusViper.html');}catch(e){}
+try{const _q=JSON.parse(localStorage.getItem('lastPlayedQueue')||'[]').filter(x=>x!=='NexusViper.html');_q.unshift('NexusViper.html');localStorage.setItem('lastPlayedQueue',JSON.stringify(_q.slice(0,3)));}catch(e){}
 // ── Canvas setup ──────────────────────────────────────────
 const CW=320, CH=224;
 const DPR=window.devicePixelRatio||1;

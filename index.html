@@ -1230,22 +1230,34 @@ try{(function(){
 }); // document.fonts.ready
 </script>
 <script>
-// ── Last-played card → top ────────────────────────────────
+// ── Last-played queue → top (up to 3) ───────────────────────
 (function(){
   try{
-    const last=localStorage.getItem('lastPlayed');
-    if(!last)return;
+    // migrate legacy single-value
+    const legacy=localStorage.getItem('lastPlayed');
+    if(legacy){
+      const mq=JSON.parse(localStorage.getItem('lastPlayedQueue')||'[]');
+      if(!mq.includes(legacy)){mq.push(legacy);localStorage.setItem('lastPlayedQueue',JSON.stringify(mq.slice(0,3)));}
+      localStorage.removeItem('lastPlayed');
+    }
+    const queue=JSON.parse(localStorage.getItem('lastPlayedQueue')||'[]').slice(0,3);
+    if(!queue.length)return;
     const grid=document.querySelector('.grid');
-    const card=grid.querySelector('a.card[href="'+last+'"]');
-    if(!card)return;
-    grid.insertBefore(card,grid.firstElementChild);
-    // subtle highlight: pulsing outline
-    card.style.setProperty('box-shadow','0 0 0 2px var(--accent), 0 0 18px var(--accent-glow)','important');
-    const badge=document.createElement('div');
-    badge.textContent='▶ 上次遊玩';
-    badge.style.cssText='position:absolute;top:6px;right:7px;font-family:"Press Start 2P",monospace;font-size:6px;color:#fff;background:rgba(0,0,0,0.72);padding:2px 5px;border-radius:3px;pointer-events:none;z-index:10;';
-    card.style.position='relative';
-    card.appendChild(badge);
+    // insert in reverse so first-played ends up at index 0
+    [...queue].reverse().forEach((href,ri)=>{
+      const card=grid.querySelector('a.card[href="'+href+'"]');
+      if(!card)return;
+      grid.insertBefore(card,grid.firstElementChild);
+      card.style.setProperty('box-shadow','0 0 0 2px var(--accent), 0 0 18px var(--accent-glow)','important');
+      // remove old badge if re-promoting
+      card.querySelectorAll('.__lp_badge').forEach(b=>b.remove());
+      const badge=document.createElement('div');
+      badge.className='__lp_badge';
+      badge.textContent='▶ 上次遊玩';
+      badge.style.cssText='position:absolute;top:6px;right:7px;font-family:"Press Start 2P",monospace;font-size:6px;color:#fff;background:rgba(0,0,0,0.72);padding:2px 5px;border-radius:3px;pointer-events:none;z-index:10;';
+      card.style.position='relative';
+      card.appendChild(badge);
+    });
   }catch(e){}
 })();
 </script>

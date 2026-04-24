@@ -192,7 +192,7 @@
 
 <script>
 'use strict';
-try{localStorage.setItem('lastPlayed','2048.html');}catch(e){}
+try{const _q=JSON.parse(localStorage.getItem('lastPlayedQueue')||'[]').filter(x=>x!=='2048.html');_q.unshift('2048.html');localStorage.setItem('lastPlayedQueue',JSON.stringify(_q.slice(0,3)));}catch(e){}
 
 // ── Audio (lazy-init: AudioContext created on first gesture) ──
 let AC = null;

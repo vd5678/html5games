@@ -149,7 +149,7 @@
 </div>
 
 <script>
-try{localStorage.setItem('lastPlayed','Arkanoid.html');}catch(e){}
+try{const _q=JSON.parse(localStorage.getItem('lastPlayedQueue')||'[]').filter(x=>x!=='Arkanoid.html');_q.unshift('Arkanoid.html');localStorage.setItem('lastPlayedQueue',JSON.stringify(_q.slice(0,3)));}catch(e){}
 /************************************************************
  * ARKANOID – HTML5 Canvas Recreation
  * Controls: ← → Arrow keys | SPACE launch/pause | ESC menu

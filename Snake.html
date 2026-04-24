@@ -118,7 +118,7 @@
 </div>
 
 <script>
-try{localStorage.setItem('lastPlayed','Snake.html');}catch(e){}
+try{const _q=JSON.parse(localStorage.getItem('lastPlayedQueue')||'[]').filter(x=>x!=='Snake.html');_q.unshift('Snake.html');localStorage.setItem('lastPlayedQueue',JSON.stringify(_q.slice(0,3)));}catch(e){}
 const canvas = document.getElementById('canvas');
 const ctx    = canvas.getContext('2d');
 const W = canvas.width, H = canvas.height;
